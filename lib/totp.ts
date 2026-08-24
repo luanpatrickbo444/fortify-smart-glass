@@ -22,11 +22,19 @@ function decodeBase32(value: string) {
 }
 
 function counterBytes(counter: number) {
+  // TOTP usa um contador de 8 bytes (big-endian).
+  // Mantemos a implementação compatível com target ES2017, sem BigInt.
+  // O contador derivado de Date.now()/30 permanece muito abaixo de
+  // Number.MAX_SAFE_INTEGER para o horizonte prático desta aplicação.
+  if (!Number.isSafeInteger(counter) || counter < 0) {
+    throw new Error("Contador TOTP inválido");
+  }
+
   const bytes = new Uint8Array(8);
-  let value = BigInt(counter);
+  let value = counter;
   for (let i = 7; i >= 0; i--) {
-    bytes[i] = Number(value & 0xffn);
-    value >>= 8n;
+    bytes[i] = value % 256;
+    value = Math.floor(value / 256);
   }
   return bytes;
 }
