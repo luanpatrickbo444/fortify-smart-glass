@@ -32,7 +32,12 @@ export default function MfaPage() {
   }
 
   return (
-    <HudShell step={2} eyebrow="MULTI-FACTOR AUTHENTICATION // 02" title="Confirme que é realmente você." description={`Segundo fator obrigatório para ${user || "o colaborador"}. No protótipo, um código demonstra o MFA; em produção, substitua por WebAuthn, biometria homologada ou IdP corporativo.`}>
+    <HudShell
+      step={2}
+      eyebrow="ETAPA 02 • AUTENTICAÇÃO MULTIFATOR"
+      title="Confirme sua identidade."
+      description={`Segundo fator obrigatório para ${user || "o colaborador"}. Esta camada reduz o risco de uso indevido mesmo quando uma credencial primária é comprometida.`}
+    >
       <form className="authCard" onSubmit={submit}>
         {error && <div className="error">{error}</div>}
         <div className="field">
@@ -40,10 +45,10 @@ export default function MfaPage() {
           <div className="inputWrap"><input className="codeInput" inputMode="numeric" maxLength={6} value={code} onChange={(e)=>setCode(e.target.value.replace(/\D/g,""))} /></div>
         </div>
         <div className="formRow">
-          <button className="primaryBtn" disabled={loading || code.length !== 6}>{loading ? "VERIFICANDO..." : "CONFIRMAR MFA"}</button>
-          <button type="button" className="secondaryBtn" onClick={()=>router.push("/glass/login")}>CANCELAR</button>
+          <button className="primaryBtn" disabled={loading || code.length !== 6}>{loading ? "VERIFICANDO..." : "VALIDAR SEGUNDO FATOR"}</button>
+          <button type="button" className="secondaryBtn" onClick={()=>router.push("/glass/login")}>VOLTAR</button>
         </div>
-        <p className="hint">DEMO: 246810. O código é somente para demonstração do fluxo de segurança.</p>
+        <p className="hint">Protótipo: código 246810. Em produção, a etapa pode ser integrada ao MFA corporativo, WebAuthn ou biometria homologada.</p>
       </form>
     </HudShell>
   );

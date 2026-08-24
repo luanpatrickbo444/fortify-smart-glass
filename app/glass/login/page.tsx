@@ -40,25 +40,25 @@ export default function LoginPage() {
   return (
     <HudShell
       step={1}
-      eyebrow="IDENTITY VERIFICATION // 01"
-      title="Acesso seguro começa na identidade."
-      description="Autentique o colaborador diretamente no Smart Glasses antes de qualquer acesso a dados corporativos ou assistentes de IA."
+      eyebrow="ETAPA 01 • IDENTIDADE CORPORATIVA"
+      title="Identifique o colaborador."
+      description="O acesso aos serviços digitais começa pela identidade corporativa. Nenhuma informação de negócio é liberada antes da validação desta etapa."
     >
       <form className="authCard" onSubmit={submit}>
         {error && <div className="error">{error}</div>}
         <div className="field">
-          <label>IDENTIDADE CORPORATIVA</label>
+          <label>IDENTIDADE / E-MAIL CORPORATIVO</label>
           <div className="inputWrap"><input value={user} onChange={(e)=>setUser(e.target.value)} autoComplete="username" /></div>
         </div>
         <div className="field">
-          <label>PIN / SENHA</label>
+          <label>SENHA / PIN DE ACESSO</label>
           <div className="inputWrap"><input value={password} onChange={(e)=>setPassword(e.target.value)} type="password" autoComplete="current-password" /></div>
         </div>
         <div className="formRow">
-          <button className="primaryBtn" disabled={loading}>{loading ? "VALIDANDO..." : "AUTENTICAR"}</button>
+          <button className="primaryBtn" disabled={loading}>{loading ? "VALIDANDO IDENTIDADE..." : "CONTINUAR COM SEGURANÇA"}</button>
         </div>
         <div className="meta">
-          <span>DEVICE: {deviceId}</span><span>CHANNEL: HTTPS</span><span>POLICY: ZERO TRUST</span>
+          <span>DEVICE {deviceId}</span><span>HTTPS / TLS</span><span>ZERO TRUST</span>
         </div>
       </form>
     </HudShell>

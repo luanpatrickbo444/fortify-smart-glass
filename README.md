@@ -56,3 +56,15 @@ O Smart Glasses **não acessa diretamente o LLM**. Configure `LLM_ENDPOINT` e `L
 ## Importante para produção
 
 Este repositório é um protótipo funcional para apresentação. Para produção, substitua as credenciais demo por IdP corporativo (OIDC/SAML), use WebAuthn/FIDO2 ou MFA homologado, certificados reais de dispositivo (mTLS), persistência de auditoria, rate limiting distribuído, secrets manager/KMS, políticas de DLP e revogação centralizada.
+
+## Redesign Petrobras
+
+Esta versão aplica uma linguagem visual corporativa inspirada no contexto Petrobras: verde, amarelo, azul-petróleo, superfícies claras, comunicação institucional e foco em segurança operacional. O nome da solução permanece **Fortify**.
+
+Principais mudanças visuais:
+- lockup Fortify + Petrobras para o protótipo;
+- fluxo de autenticação em três etapas com aparência corporativa;
+- painel lateral explicando Zero Trust, autenticação e gateway;
+- tela do assistente reformulada para ambiente corporativo;
+- dashboard administrativo alinhado ao mesmo sistema visual;
+- responsividade revisada para desktop, tablet e mobile.

@@ -32,21 +32,26 @@ export default function DevicePage() {
   }
 
   return (
-    <HudShell step={3} eyebrow="DEVICE TRUST // 03" title="Valide o Smart Glasses." description="Mesmo com usuário e MFA válidos, o acesso só é liberado para um dispositivo corporativo autorizado. Essa etapa cria o vínculo entre identidade e equipamento.">
+    <HudShell
+      step={3}
+      eyebrow="ETAPA 03 • CONFIANÇA DO DISPOSITIVO"
+      title="Valide o Smart Glasses."
+      description="O usuário pode estar correto e ainda assim o equipamento precisa ser confiável. O Fortify vincula a sessão a um dispositivo corporativo autorizado."
+    >
       {error && <div className="error">{error}</div>}
-      {status === "ok" && <div className="success">Dispositivo confiável. Sessão segura emitida.</div>}
+      {status === "ok" && <div className="success">Dispositivo confiável. Sessão corporativa emitida com sucesso.</div>}
       <div className="devicePanel">
         <div className="deviceCard deviceVisual" />
         <div className="deviceCard">
           <h3>{deviceId}</h3>
-          <p>Perfil corporativo de Smart Glasses configurado para acesso via Fortify Security Gateway.</p>
+          <p>Perfil corporativo de Smart Glasses habilitado para acesso somente por meio do Fortify Security Gateway.</p>
           <ul className="statusList">
-            <li><span>Usuário</span><b>VERIFICADO</b></li>
-            <li><span>MFA</span><b>VERIFICADO</b></li>
-            <li><span>Certificado / Device ID</span><b>{status === "checking" ? "VALIDANDO" : status === "ok" ? "VÁLIDO" : "PENDENTE"}</b></li>
+            <li><span>Identidade corporativa</span><b>VERIFICADA</b></li>
+            <li><span>Segundo fator</span><b>VERIFICADO</b></li>
+            <li><span>Device ID / certificado</span><b>{status === "checking" ? "VALIDANDO" : status === "ok" ? "CONFIÁVEL" : "PENDENTE"}</b></li>
           </ul>
           <div className="formRow" style={{marginTop:18}}>
-            <button className="primaryBtn" onClick={validate} disabled={status === "checking" || status === "ok"}>{status === "checking" ? "VALIDANDO..." : "VALIDAR DISPOSITIVO"}</button>
+            <button className="primaryBtn" onClick={validate} disabled={status === "checking" || status === "ok"}>{status === "checking" ? "VALIDANDO DISPOSITIVO..." : "LIBERAR ACESSO SEGURO"}</button>
           </div>
         </div>
       </div>
