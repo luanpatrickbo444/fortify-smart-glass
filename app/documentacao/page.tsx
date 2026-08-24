@@ -320,7 +320,7 @@ npm run dev`}</pre>
               </div>
               <div className="docTwoCols">
                 <div><h3>Modo desktop</h3><p>Funciona em qualquer navegador moderno como simulador 2D/3D, permitindo autenticar, consultar o equipamento P-101 e usar o assistente sem headset.</p></div>
-                <div><h3>Modo imersivo</h3><p>Em HTTPS e navegador compatível com WebXR, o botão de modo imersivo inicia uma sessão <code>immersive-vr</code>, renderiza o ativo em WebGL e apresenta o HUD de autorização.</p></div>
+                <div><h3>Modo imersivo</h3><p>Em HTTPS e navegador compatível com WebXR, o botão de modo imersivo inicia uma sessão <code>immersive-vr</code> com configuração mínima para maximizar a compatibilidade. Depois, o Fortify tenta <code>local-floor</code>, <code>local</code> e por fim <code>viewer</code> como espaços de referência, renderiza o ativo em WebGL e apresenta o HUD de autorização.</p></div>
               </div>
               <h3>Interação da demonstração</h3>
               <ol className="flowList">

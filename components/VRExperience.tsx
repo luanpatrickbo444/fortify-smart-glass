@@ -300,10 +300,12 @@ export function VRExperience() {
     setNotice("");
 
     try {
-      const xrSession = await xr.requestSession("immersive-vr", {
-        requiredFeatures: [],
-        optionalFeatures: ["local-floor", "bounded-floor"]
-      });
+      // Start with the smallest possible WebXR session configuration.
+      // Some headset/browser combinations reject a session when optional
+      // reference-space features are supplied, even though immersive-vr
+      // itself is supported. We request the base session first and then
+      // progressively choose the best reference space available.
+      const xrSession = await xr.requestSession("immersive-vr");
       setXrActive(true);
 
       const canvas = document.createElement("canvas");
@@ -327,8 +329,15 @@ export function VRExperience() {
       xrSession.updateRenderState({ baseLayer });
 
       let referenceSpace: any;
-      try { referenceSpace = await xrSession.requestReferenceSpace("local-floor"); }
-      catch { referenceSpace = await xrSession.requestReferenceSpace("local"); }
+      try {
+        referenceSpace = await xrSession.requestReferenceSpace("local-floor");
+      } catch {
+        try {
+          referenceSpace = await xrSession.requestReferenceSpace("local");
+        } catch {
+          referenceSpace = await xrSession.requestReferenceSpace("viewer");
+        }
+      }
 
       const colorProgram = createProgram(gl,
         `attribute vec3 a_position; uniform mat4 u_projection; uniform mat4 u_view; uniform mat4 u_model; void main(){ gl_Position=u_projection*u_view*u_model*vec4(a_position,1.0); }`,
@@ -439,7 +448,19 @@ export function VRExperience() {
       });
     } catch (err) {
       setXrActive(false);
-      setNotice(err instanceof Error ? err.message : "Não foi possível iniciar a sessão WebXR.");
+      const domError = err as DOMException | Error;
+      const errorName = "name" in domError ? domError.name : "";
+      const errorMessage = err instanceof Error ? err.message : "";
+
+      if (errorName === "NotSupportedError" || /session configuration is not supported/i.test(errorMessage)) {
+        setNotice("O navegador/headset não aceitou uma sessão immersive-vr. Abra esta página diretamente no navegador WebXR do headset, em HTTPS. No computador, use o simulador desktop.");
+      } else if (errorName === "SecurityError") {
+        setNotice("O navegador bloqueou o acesso ao XR. Confirme a permissão do headset e mantenha a aplicação em HTTPS.");
+      } else if (errorName === "InvalidStateError") {
+        setNotice("Já existe uma sessão XR ativa. Encerre a sessão atual e tente novamente.");
+      } else {
+        setNotice(errorMessage || "Não foi possível iniciar a sessão WebXR.");
+      }
     }
   }
 
