@@ -308,7 +308,11 @@ export function VRExperience() {
 
       const canvas = document.createElement("canvas");
       canvas.width = 2048; canvas.height = 2048;
-      const gl = canvas.getContext("webgl", { xrCompatible: true, alpha: false, antialias: true });
+      const gl = canvas.getContext("webgl", {
+        xrCompatible: true,
+        alpha: false,
+        antialias: true
+      }) as WebGLRenderingContext | null;
       if (!gl) throw new Error("WebGL não está disponível.");
       if ((gl as any).makeXRCompatible) await (gl as any).makeXRCompatible();
 
