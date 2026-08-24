@@ -9,6 +9,7 @@ const endpointRows = [
   ["GET", "/api/fortify/auth/session", "Retorna identidade, dispositivo, permissões e expiração da sessão autenticada."],
   ["POST", "/api/fortify/auth/logout", "Encerra a sessão e remove o cookie de autenticação."],
   ["POST", "/api/fortify/ai/query", "Autoriza a solicitação e encaminha ao LLM configurado sem expor a chave ao Smart Glasses."],
+  ["POST", "/api/fortify/xr/equipment", "Libera dados industriais simulados somente para sessão autenticada com a permissão documents.read."],
 ];
 
 const envRows = [
@@ -31,6 +32,8 @@ const tests = [
   ["Rota protegida", "A página do assistente sem sessão válida deve redirecionar para o login."],
   ["Permissão ausente", "Consulta à IA sem ai.query deve retornar 403."],
   ["Logout", "O cookie de sessão deve ser removido e o acesso subsequente deve falhar."],
+  ["Dados XR sem sessão", "A consulta ao ativo P-101 deve retornar 401 sem sessão autenticada."],
+  ["WebXR", "Em HTTPS/headset compatível, a sessão immersive-vr deve abrir; em desktop sem WebXR, o simulador deve permanecer funcional."],
 ];
 
 export default function DocumentationPage() {
@@ -69,8 +72,9 @@ export default function DocumentationPage() {
           <a href="#ambiente">11. Variáveis de ambiente</a>
           <a href="#testes">12. Plano de testes</a>
           <a href="#deploy">13. Deploy</a>
-          <a href="#producao">14. Produção</a>
-          <Link href="/glass/login" className="docsTocCta">ABRIR DEMONSTRAÇÃO</Link>
+          <a href="#xr">14. WebXR / VR</a>
+          <a href="#producao">15. Produção</a>
+          <Link href="/vr" className="docsTocCta">ABRIR SIMULAÇÃO XR</Link>
         </aside>
 
         <article className="docsContent">
@@ -299,8 +303,45 @@ npm run dev`}</pre>
             </div>
           </section>
 
-          <section id="producao" className="docSection">
+          <section id="xr" className="docSection">
             <div className="docNumber">14</div>
+            <div>
+              <span className="docEyebrow">WEBXR / VR</span>
+              <h2>Como o VR simula os Smart Glasses</h2>
+              <p>
+                A rota <code>/vr</code> adiciona uma camada de demonstração imersiva. O headset VR não é apresentado como substituto do Smart Glasses final; ele funciona como um emulador da experiência do wearable durante a prototipação, permitindo demonstrar o fluxo de segurança em um ambiente tridimensional sem depender de hardware óptico específico.
+              </p>
+              <div className="docsArchitecture">
+                <div className="docsArchNode"><small>CLIENTE XR</small><strong>Headset VR / WebXR</strong><span>Simula a interface do dispositivo vestível</span></div>
+                <i>↓ HTTPS</i>
+                <div className="docsArchNode gateway"><small>SEGURANÇA</small><strong>Fortify Security Gateway</strong><span>Identity • MFA • Device Trust • JWT • RBAC • Audit</span></div>
+                <i>↓ autorização</i>
+                <div className="docsArchNode"><small>RECURSOS</small><strong>IA + dados simulados</strong><span>LLM e ativo industrial P-101</span></div>
+              </div>
+              <div className="docTwoCols">
+                <div><h3>Modo desktop</h3><p>Funciona em qualquer navegador moderno como simulador 2D/3D, permitindo autenticar, consultar o equipamento P-101 e usar o assistente sem headset.</p></div>
+                <div><h3>Modo imersivo</h3><p>Em HTTPS e navegador compatível com WebXR, o botão de modo imersivo inicia uma sessão <code>immersive-vr</code>, renderiza o ativo em WebGL e apresenta o HUD de autorização.</p></div>
+              </div>
+              <h3>Interação da demonstração</h3>
+              <ol className="flowList">
+                <li><b>Autenticar.</b><span>O operador conclui identidade, MFA e Device Trust na própria rota XR.</span></li>
+                <li><b>Entrar no ambiente.</b><span>O navegador solicita uma sessão WebXR somente depois da sessão Fortify estar autenticada.</span></li>
+                <li><b>Selecionar o ativo.</b><span>O controlador do headset ou o simulador solicita o ativo P-101.</span></li>
+                <li><b>Autorizar os dados.</b><span>O endpoint XR exige o cookie de sessão e a permissão <code>documents.read</code>.</span></li>
+                <li><b>Consultar IA.</b><span>A análise é enviada ao endpoint <code>/api/fortify/ai/query</code>, que exige <code>ai.query</code> e mantém a credencial do LLM no servidor.</span></li>
+              </ol>
+              <div className="docCallout warning"><b>Limite da simulação</b><span>O cenário industrial e os valores do ativo P-101 são dados fictícios para demonstração. Não representam informação operacional da Petrobras. A marca é usada no contexto acadêmico do desafio e o protótipo não deve ser apresentado como sistema oficial ou homologado.</span></div>
+              <h3>Requisitos para testar em headset</h3>
+              <pre className="docCode">{`1. Fazer deploy HTTPS (ex.: Vercel)
+2. Abrir /vr no navegador do headset
+3. Concluir Login → MFA → Device Trust
+4. Clicar em "Entrar no modo imersivo"
+5. Pressionar o gatilho do controle para alternar os dados do P-101`}</pre>
+            </div>
+          </section>
+
+          <section id="producao" className="docSection">
+            <div className="docNumber">15</div>
             <div>
               <span className="docEyebrow">EVOLUÇÃO PARA PRODUÇÃO</span>
               <h2>O que ainda precisaria ser substituído ou integrado</h2>
@@ -318,7 +359,7 @@ npm run dev`}</pre>
                 <span>RESUMO</span>
                 <h3>O protótipo prova a camada de acesso, não substitui uma arquitetura corporativa completa.</h3>
                 <p>Seu valor é demonstrar de forma concreta como identidade, MFA, confiança do dispositivo e autorização podem ser aplicados antes de um Smart Glasses consultar um LLM sem modificar o sistema de IA existente.</p>
-                <Link href="/glass/login" className="heroPrimary">Executar fluxo completo</Link>
+                <Link href="/vr" className="heroPrimary">Executar simulação XR</Link>
               </div>
             </div>
           </section>

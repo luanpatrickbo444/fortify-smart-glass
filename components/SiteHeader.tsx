@@ -12,6 +12,7 @@ export function SiteHeader() {
           <Link href="/#visao-geral">Visão geral</Link>
           <Link href="/documentacao">Documentação</Link>
           <Link href="/admin">Arquitetura</Link>
+          <Link href="/vr">Simulador XR</Link>
           <Link href="/glass/login" className="navCta">Abrir Smart Glasses</Link>
         </nav>
       </div>

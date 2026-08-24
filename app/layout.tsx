@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Fortify | Acesso Seguro à IA por Smart Glasses",
-  description: "Protótipo acadêmico de autenticação, confiança do dispositivo e gateway seguro para acesso à IA por Smart Glasses no desafio Petrobras / SENAI."
+  title: "Fortify | Smart Glasses + WebXR Security Gateway",
+  description: "Protótipo acadêmico de autenticação, confiança do dispositivo, Security Gateway e simulação WebXR/VR para acesso seguro à IA por dispositivos vestíveis."
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
