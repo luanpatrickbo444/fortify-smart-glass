@@ -308,12 +308,17 @@ export function VRExperience() {
 
       const canvas = document.createElement("canvas");
       canvas.width = 2048; canvas.height = 2048;
-      const gl = canvas.getContext("webgl", {
+      const glContext = canvas.getContext("webgl", {
         xrCompatible: true,
         alpha: false,
         antialias: true
       }) as WebGLRenderingContext | null;
-      if (!gl) throw new Error("WebGL não está disponível.");
+      if (!glContext) throw new Error("WebGL não está disponível.");
+
+      // Keep a permanently non-null WebGL reference for the nested render callbacks.
+      // TypeScript does not preserve null narrowing of captured variables across closures.
+      const gl: WebGLRenderingContext = glContext;
+
       if ((gl as any).makeXRCompatible) await (gl as any).makeXRCompatible();
 
       const XRWebGLLayerCtor = (window as any).XRWebGLLayer;
