@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Logo } from "@/components/Logo";
 
 type Msg = { role: "user" | "ai"; text: string };
@@ -50,7 +51,7 @@ export default function AssistantPage() {
             <div className="sideMetric"><small>SMART GLASSES</small><strong>{session?.deviceId ?? "VALIDANDO..."}</strong></div>
             <div className="sideMetric"><small>FORTIFY GATEWAY</small><strong>ATIVO • TLS 1.3</strong></div>
           </div>
-          <div className="navInfo">As solicitações passam pelo Fortify antes do LLM. A sessão, o dispositivo e as permissões são verificados a cada acesso protegido.</div>
+          <div className="navInfo">As solicitações passam pelo Fortify antes do LLM. A sessão, o dispositivo e as permissões são verificados a cada acesso protegido.<br/><br/><Link href="/documentacao">ABRIR DOCUMENTAÇÃO TÉCNICA →</Link></div>
         </aside>
         <div className="mainAssistant">
           <header className="assistantHeader">

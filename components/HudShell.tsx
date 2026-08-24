@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { Logo } from "./Logo";
 
 export function HudShell({
@@ -20,28 +21,30 @@ export function HudShell({
     <main className="hudPage">
       <div className="brandStripe" aria-hidden="true" />
       <header className="hudTopbar">
-        <Logo />
+        <Link href="/" aria-label="Voltar para o início"><Logo /></Link>
         <div className="hudTopActions">
-          <span className="environmentBadge">AMBIENTE CORPORATIVO</span>
-          <div className="hudConnection"><span className="pulse" /> CANAL TLS 1.3</div>
+          <Link href="/documentacao" className="hudDocLink">DOCUMENTAÇÃO</Link>
+          <span className="environmentBadge">PROTÓTIPO SENAI</span>
+          <div className="hudConnection"><span className="pulse" /> CANAL PROTEGIDO</div>
         </div>
       </header>
 
       <section className="hudFrame">
         <aside className="contextPanel">
-          <div className="contextKicker">FORTIFY / PETROBRAS</div>
-          <h2>Acesso seguro à IA por Smart Glasses</h2>
+          <div className="contextKicker">DESAFIO TECNOLÓGICO • SMART GLASSES</div>
+          <h2>Acesso seguro à IA em dispositivos vestíveis.</h2>
           <p>
-            Identidade, segundo fator e confiança do dispositivo antes de qualquer dado corporativo sair do perímetro protegido.
+            O Fortify concentra identidade, segundo fator, confiança do dispositivo, autorização e auditoria antes do acesso aos serviços digitais corporativos.
           </p>
 
           <div className="securitySummary">
-            <div><span>01</span><strong>Autenticação</strong><small>Identidade corporativa validada</small></div>
-            <div><span>02</span><strong>Zero Trust</strong><small>Nenhum dispositivo é presumido confiável</small></div>
-            <div><span>03</span><strong>Gateway</strong><small>A IA nunca é acessada diretamente</small></div>
+            <div><span>01</span><strong>Identidade</strong><small>Credencial corporativa validada</small></div>
+            <div><span>02</span><strong>Confiança</strong><small>MFA e vínculo do Smart Glasses</small></div>
+            <div><span>03</span><strong>Gateway</strong><small>IA acessada somente após autorização</small></div>
           </div>
 
           <div className="petrobrasAccent" aria-hidden="true">
+            <span>AUTENTICAÇÃO CONFIÁVEL</span>
             <span>PROTEÇÃO DE DADOS</span>
             <span>CONTROLE DE ACESSO</span>
           </div>
@@ -68,7 +71,7 @@ export function HudShell({
 
       <footer className="hudFooter">
         <span>FORTIFY SECURITY GATEWAY</span>
-        <span>PROTÓTIPO • SMART GLASSES • PETROBRAS / SENAI</span>
+        <span>PROTÓTIPO ACADÊMICO • PETROBRAS / SENAI</span>
       </footer>
     </main>
   );

@@ -1,70 +1,66 @@
-# Fortify — Secure Smart Glasses Access
+# Fortify — Smart Glasses Security Gateway
 
-Protótipo em Next.js para demonstrar uma **camada de acesso seguro** entre Smart Glasses e um sistema corporativo/LLM.
+Protótipo acadêmico em Next.js para o desafio de inovação Petrobras / SENAI sobre **acesso seguro à IA por Smart Glasses**.
 
-## Fluxo implementado
+## O que esta versão contém
 
-1. Identidade corporativa + senha/PIN
-2. MFA de 6 dígitos (demonstração)
-3. Validação do `device_id` do Smart Glasses
-4. Emissão de JWT assinado em cookie `httpOnly`, `SameSite=Strict`, validade de 15 minutos
-5. Autorização RBAC (`ai.query`, `documents.read`)
-6. Acesso ao LLM somente por `/api/fortify/ai/query`
-7. Auditoria estruturada via logs JSON
-8. Logout e expiração automática de sessão
+- Redesign institucional inspirado nas cores públicas da marca Petrobras.
+- Uso da logomarca horizontal da Petrobras no lockup visual do protótipo.
+- Landing page executiva em `/`.
+- Documentação técnica completa em `/documentacao`.
+- Visão de arquitetura em `/admin`.
+- Jornada do Smart Glasses em `/glass/login` → `/glass/mfa` → `/glass/device` → `/glass/assistant`.
+- Security Gateway com autenticação em estágios, Device ID, JWT HMAC-SHA256, cookie httpOnly, autorização e auditoria.
+- Integração opcional com LLM externo via `LLM_ENDPOINT` e `LLM_API_KEY`.
 
-## Executar
+> Este repositório é um protótipo acadêmico. Não representa produto oficial, sistema produtivo ou arquitetura homologada da Petrobras.
+
+## Rotas
+
+- `/` — apresentação executiva
+- `/documentacao` — documentação completa
+- `/admin` — arquitetura e controles
+- `/glass/login` — identidade
+- `/glass/mfa` — segundo fator
+- `/glass/device` — confiança do dispositivo
+- `/glass/assistant` — assistente protegido
+
+## Variáveis de ambiente
+
+Copie `.env.example` para `.env.local` em desenvolvimento.
+
+```env
+FORTIFY_DEMO_USER=colaborador@fortify.local
+FORTIFY_DEMO_PASSWORD=Fortify@123
+FORTIFY_DEMO_MFA_CODE=246810
+FORTIFY_ALLOWED_DEVICE_IDS=FORTIFY-GLASS-001,FORTIFY-GLASS-002
+FORTIFY_JWT_SECRET=troque-por-um-segredo-com-32-ou-mais-caracteres
+LLM_ENDPOINT=
+LLM_API_KEY=
+```
+
+Em produção, `FORTIFY_JWT_SECRET` precisa ter pelo menos 32 caracteres.
+
+## Executar localmente
 
 ```bash
-cp .env.example .env.local
 npm install
 npm run dev
 ```
 
-Abra `http://localhost:3000`.
+## Deploy na Vercel
 
-### Credenciais de demonstração
+Use:
 
-- Usuário: `colaborador@fortify.local`
-- Senha: `Fortify@123`
-- MFA: `246810`
-- Device ID: `FORTIFY-GLASS-001`
+- Framework Preset: `Next.js`
+- Build Command: automático
+- Output Directory: automático
+- Install Command: automático
 
-Altere tudo no `.env.local` antes de qualquer demonstração pública.
+**Não configure `public` como Output Directory.**
 
-## Rotas
+Cadastre as variáveis de ambiente antes do redeploy de produção.
 
-- `/glass/login` — autenticação no dispositivo
-- `/glass/mfa` — segundo fator
-- `/glass/device` — validação do Smart Glasses
-- `/glass/assistant` — área protegida
-- `/admin` — visão arquitetural do protótipo
+## Logomarca Petrobras
 
-## API
-
-- `POST /api/fortify/auth/login`
-- `POST /api/fortify/auth/mfa`
-- `POST /api/fortify/device/validate`
-- `GET /api/fortify/auth/session`
-- `POST /api/fortify/auth/logout`
-- `POST /api/fortify/ai/query`
-
-## LLM corporativo
-
-O Smart Glasses **não acessa diretamente o LLM**. Configure `LLM_ENDPOINT` e `LLM_API_KEY` no servidor. O endpoint `/api/fortify/ai/query` valida a sessão e então faz o encaminhamento.
-
-## Importante para produção
-
-Este repositório é um protótipo funcional para apresentação. Para produção, substitua as credenciais demo por IdP corporativo (OIDC/SAML), use WebAuthn/FIDO2 ou MFA homologado, certificados reais de dispositivo (mTLS), persistência de auditoria, rate limiting distribuído, secrets manager/KMS, políticas de DLP e revogação centralizada.
-
-## Redesign Petrobras
-
-Esta versão aplica uma linguagem visual corporativa inspirada no contexto Petrobras: verde, amarelo, azul-petróleo, superfícies claras, comunicação institucional e foco em segurança operacional. O nome da solução permanece **Fortify**.
-
-Principais mudanças visuais:
-- lockup Fortify + Petrobras para o protótipo;
-- fluxo de autenticação em três etapas com aparência corporativa;
-- painel lateral explicando Zero Trust, autenticação e gateway;
-- tela do assistente reformulada para ambiente corporativo;
-- dashboard administrativo alinhado ao mesmo sistema visual;
-- responsividade revisada para desktop, tablet e mobile.
+A interface utiliza a logomarca horizontal da Petrobras por URL pública do Wikimedia Commons, cuja página de origem referencia a Petrobras como autora. O uso neste projeto é apenas para apresentação acadêmica do desafio; direitos marcários e diretrizes de marca continuam aplicáveis.
