@@ -2,6 +2,8 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { verifyToken } from "@/lib/crypto";
 import { audit } from "@/lib/audit";
+import { COOKIE_SESSION } from "@/lib/auth-cookies";
+import { requestHasSameOrigin } from "@/lib/security";
 
 const EQUIPMENT = {
   "P-101": {
@@ -17,8 +19,11 @@ const EQUIPMENT = {
 };
 
 export async function POST(request: Request) {
+  if (!requestHasSameOrigin(request)) {
+    return NextResponse.json({ error: "Origem da requisição não autorizada." }, { status: 403 });
+  }
   const jar = await cookies();
-  const session = await verifyToken(jar.get("fortify_session")?.value);
+  const session = await verifyToken(jar.get(COOKIE_SESSION)?.value);
   if (!session || session.stage !== "authenticated" || !session.deviceId) {
     return NextResponse.json({ error: "Sessão não autenticada." }, { status: 401 });
   }

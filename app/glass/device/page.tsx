@@ -7,28 +7,32 @@ import { HudShell } from "@/components/HudShell";
 export default function DevicePage() {
   const router = useRouter();
   const [deviceId, setDeviceId] = useState("FORTIFY-GLASS-001");
-  const [status, setStatus] = useState<"idle"|"checking"|"ok"|"error">("idle");
+  const [status, setStatus] = useState<"idle" | "checking" | "ok" | "error">("idle");
   const [error, setError] = useState("");
 
   useEffect(() => {
     setDeviceId(localStorage.getItem("fortify-device-id") ?? "FORTIFY-GLASS-001");
-    if (!sessionStorage.getItem("fortify-mfa-token")) router.replace("/glass/login");
-  }, [router]);
+  }, []);
 
   async function validate() {
-    setStatus("checking"); setError("");
+    setStatus("checking");
+    setError("");
     try {
-      const mfaToken = sessionStorage.getItem("fortify-mfa-token");
       const res = await fetch("/api/fortify/device/validate", {
-        method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ deviceId, mfaToken })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ deviceId }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Dispositivo não autorizado");
       setStatus("ok");
-      sessionStorage.removeItem("fortify-preauth");
-      sessionStorage.removeItem("fortify-mfa-token");
-      setTimeout(()=>router.push("/glass/assistant"), 650);
-    } catch(err) { setStatus("error"); setError(err instanceof Error ? err.message : "Falha inesperada"); }
+      sessionStorage.removeItem("fortify-mfa-methods");
+      setTimeout(() => router.push("/glass/assistant"), 650);
+    } catch (err) {
+      setStatus("error");
+      setError(err instanceof Error ? err.message : "Falha inesperada");
+    }
   }
 
   return (
@@ -50,7 +54,7 @@ export default function DevicePage() {
             <li><span>Segundo fator</span><b>VERIFICADO</b></li>
             <li><span>Device ID / certificado</span><b>{status === "checking" ? "VALIDANDO" : status === "ok" ? "CONFIÁVEL" : "PENDENTE"}</b></li>
           </ul>
-          <div className="formRow" style={{marginTop:18}}>
+          <div className="formRow" style={{ marginTop: 18 }}>
             <button className="primaryBtn" onClick={validate} disabled={status === "checking" || status === "ok"}>{status === "checking" ? "VALIDANDO DISPOSITIVO..." : "LIBERAR ACESSO SEGURO"}</button>
           </div>
         </div>

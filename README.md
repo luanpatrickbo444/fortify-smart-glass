@@ -1,4 +1,4 @@
-# Fortify — Smart Glasses + WebXR Security Prototype
+# Fortify — Smart Glasses + WebXR | Production-ready Demo
 
 Protótipo acadêmico em Next.js para demonstrar acesso seguro a IA e dados restritos por meio de Smart Glasses, com um módulo WebXR/VR usado como emulador da experiência vestível durante a apresentação.
 
@@ -7,9 +7,10 @@ Protótipo acadêmico em Next.js para demonstrar acesso seguro a IA e dados rest
 ## O que está pronto
 
 - Identidade + senha/PIN
-- MFA em estágio separado
+- MFA em estágio separado com TOTP (Authenticator) ou código alternativo
 - Device Binding durante a autenticação
 - Allowlist de Device IDs
+- Pré-auth e MFA em cookies `httpOnly` de curta duração
 - JWT HMAC-SHA256
 - Cookie de sessão `httpOnly`, `SameSite=Strict` e `Secure` em produção
 - RBAC com `ai.query` e `documents.read`
@@ -79,6 +80,8 @@ Copie `.env.example` para `.env.local`.
 ```env
 FORTIFY_DEMO_USER=colaborador@fortify.local
 FORTIFY_DEMO_PASSWORD=Fortify@123
+FORTIFY_TOTP_SECRET=<segredo-base32-do-authenticator>
+FORTIFY_MFA_RECOVERY_CODE=246810
 FORTIFY_DEMO_MFA_CODE=246810
 FORTIFY_ALLOWED_DEVICE_IDS=FORTIFY-GLASS-001,FORTIFY-GLASS-002
 FORTIFY_JWT_SECRET=<segredo-com-32-ou-mais-caracteres>
@@ -99,6 +102,26 @@ Ou com Node.js:
 ```powershell
 node -e "console.log(require('crypto').randomBytes(48).toString('base64'))"
 ```
+
+
+## MFA da versão de produção
+
+O Fortify agora aceita dois métodos na segunda etapa:
+
+- **TOTP**: código de 6 dígitos de Google Authenticator, Microsoft Authenticator, 1Password, Authy ou aplicativo compatível.
+- **Código alternativo**: contingência configurada em `FORTIFY_MFA_RECOVERY_CODE`. Para a demonstração, pode continuar em `246810`; em operação real deve ser aleatório e rotacionado após uso.
+
+Para gerar um segredo TOTP sem OpenSSL:
+
+```powershell
+npm run mfa:secret
+```
+
+O comando imprime `FORTIFY_TOTP_SECRET` e uma URI `otpauth://`. Cadastre o segredo no aplicativo autenticador e copie o valor para a Vercel. Se `FORTIFY_TOTP_SECRET` ficar vazio, o botão de Authenticator não é apresentado e o código alternativo continua disponível.
+
+Os tokens de pré-autenticação e MFA não ficam mais no `sessionStorage`; são mantidos em cookies `httpOnly`, `SameSite=Strict` e `Secure` no deployment de produção.
+
+> Manter `colaborador@fortify.local` / `Fortify@123` é adequado para a demonstração solicitada. Para uso corporativo real, substitua essa identidade fixa por IdP OIDC/SAML e política corporativa de senha/passkey.
 
 ## Executar localmente
 
@@ -138,7 +161,7 @@ Credenciais de demonstração, se mantidos os valores do `.env.example`:
 ```text
 Usuário: colaborador@fortify.local
 Senha: Fortify@123
-MFA: 246810
+MFA alternativo: 246810
 Device ID: FORTIFY-GLASS-001
 ```
 

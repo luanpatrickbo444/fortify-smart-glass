@@ -3,8 +3,8 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 
 const endpointRows = [
-  ["POST", "/api/fortify/auth/login", "Valida identidade e credencial e emite token de pré-autenticação por 180 s."],
-  ["POST", "/api/fortify/auth/mfa", "Valida o segundo fator e emite token intermediário por 180 s."],
+  ["POST", "/api/fortify/auth/login", "Valida identidade e credencial e cria pré-autenticação em cookie httpOnly por 180 s."],
+  ["POST", "/api/fortify/auth/mfa", "Valida TOTP ou código alternativo e cria estado MFA em cookie httpOnly por 180 s."],
   ["POST", "/api/fortify/device/validate", "Confere vínculo do Device ID e cria a sessão final em cookie httpOnly por 900 s."],
   ["GET", "/api/fortify/auth/session", "Retorna identidade, dispositivo, permissões e expiração da sessão autenticada."],
   ["POST", "/api/fortify/auth/logout", "Encerra a sessão e remove o cookie de autenticação."],
@@ -15,7 +15,9 @@ const endpointRows = [
 const envRows = [
   ["FORTIFY_DEMO_USER", "Identidade usada na demonstração"],
   ["FORTIFY_DEMO_PASSWORD", "Credencial primária do protótipo"],
-  ["FORTIFY_DEMO_MFA_CODE", "Código MFA de demonstração"],
+  ["FORTIFY_TOTP_SECRET", "Segredo Base32 para TOTP (aplicativo autenticador)"],
+  ["FORTIFY_MFA_RECOVERY_CODE", "Código alternativo/contingência"],
+  ["FORTIFY_DEMO_MFA_CODE", "Fallback de compatibilidade para deployments antigos"],
   ["FORTIFY_ALLOWED_DEVICE_IDS", "Lista de Device IDs autorizados, separados por vírgula"],
   ["FORTIFY_JWT_SECRET", "Segredo HMAC-SHA256 para assinatura dos tokens; mínimo de 32 caracteres em produção"],
   ["LLM_ENDPOINT", "Endpoint opcional do serviço corporativo/LLM"],
@@ -25,7 +27,8 @@ const envRows = [
 const tests = [
   ["Login correto", "Credencial válida deve avançar para MFA."],
   ["Login incorreto", "Credencial inválida deve retornar 401 sem emitir token."],
-  ["MFA incorreto", "Segundo fator inválido deve interromper o fluxo."],
+  ["MFA TOTP incorreto", "Código do aplicativo autenticador inválido deve interromper o fluxo."],
+  ["MFA alternativo", "Código de contingência válido deve concluir a segunda etapa quando habilitado."],
   ["MFA expirado", "Token de pré-autenticação fora da janela de 180 s deve ser recusado."],
   ["Troca de dispositivo", "Device ID diferente daquele usado no login deve ser bloqueado."],
   ["Dispositivo não autorizado", "Device ID fora da allowlist deve retornar 403."],
@@ -141,7 +144,7 @@ export default function DocumentationPage() {
                 <div className="docsArchNode"><small>CAMADA 3</small><strong>Serviço de IA / LLM</strong><span>Serviço de destino permanece independente do wearable</span></div>
               </div>
               <div className="docTwoCols">
-                <div><h3>Cliente</h3><p>Executa as telas de login, MFA, validação do equipamento e assistente. Tokens intermediários ficam apenas no sessionStorage durante o fluxo.</p></div>
+                <div><h3>Cliente</h3><p>Executa as telas de login, MFA, validação do equipamento e assistente. Os estados intermediários de autenticação são mantidos em cookies httpOnly de curta duração; o JavaScript do cliente não recebe esses tokens.</p></div>
                 <div><h3>Servidor Next.js</h3><p>Assina e verifica tokens, controla cookies, aplica regras de autorização, audita eventos e mantém as credenciais do LLM fora do navegador.</p></div>
               </div>
             </div>
@@ -154,13 +157,13 @@ export default function DocumentationPage() {
               <h2>Três etapas antes da sessão final</h2>
               <ol className="flowList">
                 <li><b>Identidade e credencial.</b><span>O endpoint de login valida usuário, senha/PIN e registra o Device ID usado no início da jornada.</span></li>
-                <li><b>Segundo fator.</b><span>O código MFA só é aceito se existir um token de pré-autenticação válido no estágio password.</span></li>
+                <li><b>Segundo fator.</b><span>O segundo fator pode usar TOTP (aplicativo autenticador) ou um código alternativo de contingência. A validação só ocorre se existir uma pré-autenticação httpOnly válida no estágio password.</span></li>
                 <li><b>Confiança do Smart Glasses.</b><span>O Device ID precisa coincidir com o usado no login e também pertencer à lista de equipamentos autorizados.</span></li>
                 <li><b>Sessão autenticada.</b><span>Somente depois das três validações é emitido o cookie fortify_session com permissões de acesso.</span></li>
               </ol>
               <div className="docCallout warning">
                 <b>Protótipo x produção</b>
-                <span>O código MFA fixo e a lista de dispositivos em variável de ambiente existem para demonstração. Em produção, devem ser substituídos por IdP/MFA corporativo e inventário de dispositivos gerenciados.</span>
+                <span>A versão pronta para deployment suporta TOTP e código alternativo. Para uma implantação corporativa real, identidade e MFA devem ser federados ao IdP homologado, e Device IDs devem ser substituídos por certificados/MDM ou outra evidência forte de confiança do equipamento.</span>
               </div>
             </div>
           </section>
@@ -178,7 +181,7 @@ export default function DocumentationPage() {
                 <div><strong>SESSION</strong><span>stage=authenticated</span><b>900 s</b></div>
               </div>
               <p>
-                Os tokens são assinados com HMAC-SHA256 usando <code>FORTIFY_JWT_SECRET</code>. A sessão final é armazenada em cookie <code>httpOnly</code>, com <code>SameSite=Strict</code> e flag <code>Secure</code> em produção. O cliente não recebe a chave de assinatura.
+                Os tokens são assinados com HMAC-SHA256 usando <code>FORTIFY_JWT_SECRET</code>. Pré-auth, MFA e sessão final ficam em cookies <code>httpOnly</code> de curta duração, com <code>SameSite=Strict</code> e flag <code>Secure</code> em produção. O cliente não recebe os tokens intermediários nem a chave de assinatura.
               </p>
               <pre className="docCode">{`{
   "sub": "colaborador@fortify.local",
@@ -198,7 +201,7 @@ export default function DocumentationPage() {
               <h2>Controles implementados atualmente</h2>
               <div className="securityMatrix">
                 <div><b>Identidade</b><span>Credencial primária antes de qualquer sessão.</span></div>
-                <div><b>MFA</b><span>Segundo estágio independente do login inicial.</span></div>
+                <div><b>MFA alternativo</b><span>TOTP por aplicativo autenticador ou código de contingência configurado no servidor.</span></div>
                 <div><b>Device Binding</b><span>Vínculo entre a jornada de autenticação e o Device ID.</span></div>
                 <div><b>Allowlist</b><span>Somente IDs configurados podem concluir o fluxo.</span></div>
                 <div><b>JWT assinado</b><span>Integridade dos estados de autenticação e expiração.</span></div>
@@ -249,7 +252,7 @@ export default function DocumentationPage() {
               <span className="docEyebrow">DADOS E RETENÇÃO</span>
               <h2>O que o protótipo armazena — e o que não armazena</h2>
               <div className="docTwoCols">
-                <div><h3>Armazenamento temporário</h3><p>Device ID em localStorage; tokens intermediários em sessionStorage; sessão final em cookie httpOnly; eventos de auditoria nos logs do backend.</p></div>
+                <div><h3>Armazenamento temporário</h3><p>Device ID em localStorage; pré-autenticação, estado MFA e sessão final em cookies httpOnly de curta duração; eventos de auditoria nos logs do backend.</p></div>
                 <div><h3>Não implementado</h3><p>O protótipo não grava imagem, áudio, geolocalização, biometria ou conversas em banco de dados. Também não implementa retenção corporativa real.</p></div>
               </div>
               <div className="docCallout">
@@ -269,6 +272,8 @@ export default function DocumentationPage() {
               </div>
               <pre className="docCode">{`FORTIFY_DEMO_USER=colaborador@fortify.local
 FORTIFY_DEMO_PASSWORD=Fortify@123
+FORTIFY_TOTP_SECRET=<segredo-base32-do-authenticator>
+FORTIFY_MFA_RECOVERY_CODE=246810
 FORTIFY_DEMO_MFA_CODE=246810
 FORTIFY_ALLOWED_DEVICE_IDS=FORTIFY-GLASS-001,FORTIFY-GLASS-002
 FORTIFY_JWT_SECRET=<segredo-com-32-ou-mais-caracteres>
@@ -347,7 +352,7 @@ npm run dev`}</pre>
               <h2>O que ainda precisaria ser substituído ou integrado</h2>
               <div className="productionList">
                 <div><b>IdP corporativo</b><span>Substituir credenciais de demonstração por OIDC/SAML/SSO aprovado.</span></div>
-                <div><b>MFA real</b><span>Integrar WebAuthn/FIDO2, push corporativo ou biometria homologada.</span></div>
+                <div><b>MFA corporativo</b><span>O build já suporta TOTP + contingência; uma implantação corporativa deve federar MFA ao IdP homologado e pode evoluir para WebAuthn/FIDO2, push corporativo ou biometria aprovada.</span></div>
                 <div><b>MDM / inventário</b><span>Validar certificados e postura do dispositivo em vez de uma allowlist estática.</span></div>
                 <div><b>Chaves gerenciadas</b><span>Usar secret manager/KMS e rotação periódica.</span></div>
                 <div><b>Políticas granulares</b><span>Expandir RBAC/ABAC por usuário, função, local, risco e tipo de informação.</span></div>
@@ -357,7 +362,7 @@ npm run dev`}</pre>
               </div>
               <div className="finalDocPanel">
                 <span>RESUMO</span>
-                <h3>O protótipo prova a camada de acesso, não substitui uma arquitetura corporativa completa.</h3>
+                <h3>O build está pronto para deployment de demonstração com MFA alternativo; a implantação corporativa ainda exige integrações de identidade, gestão de dispositivos e governança.</h3>
                 <p>Seu valor é demonstrar de forma concreta como identidade, MFA, confiança do dispositivo e autorização podem ser aplicados antes de um Smart Glasses consultar um LLM sem modificar o sistema de IA existente.</p>
                 <Link href="/vr" className="heroPrimary">Executar simulação XR</Link>
               </div>

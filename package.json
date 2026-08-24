@@ -1,12 +1,13 @@
 {
-  "name": "fortify-petrobras-xr",
-  "version": "2.0.0",
+  "name": "fortify-petrobras-xr-production",
+  "version": "3.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "mfa:secret": "node scripts/generate-totp-secret.mjs"
   },
   "dependencies": {
     "next": "16.2.8",

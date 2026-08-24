@@ -572,3 +572,5 @@ h1 { margin: 0; color: var(--petro-navy); font-size: clamp(35px,4.2vw,61px); lin
   .xrHomeSection { padding: 34px 18px 0; }
   .xrHomeInner { padding: 30px 22px; }
 }
+
+.mfaMethodGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.mfaMethod{border:1px solid rgba(14,84,57,.22);background:#fff;color:#12382c;border-radius:12px;padding:13px 12px;font:inherit;font-weight:800;cursor:pointer;transition:.2s ease}.mfaMethod:hover{border-color:rgba(14,84,57,.5);transform:translateY(-1px)}.mfaMethod.active{background:#0e5439;color:#fff;border-color:#0e5439;box-shadow:0 8px 22px rgba(14,84,57,.18)}@media(max-width:620px){.mfaMethodGrid{grid-template-columns:1fr}}

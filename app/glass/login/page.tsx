@@ -20,21 +20,25 @@ export default function LoginPage() {
 
   async function submit(e: FormEvent) {
     e.preventDefault();
-    setError(""); setLoading(true);
+    setError("");
+    setLoading(true);
     try {
       const res = await fetch("/api/fortify/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user, password, deviceId })
+        credentials: "same-origin",
+        body: JSON.stringify({ user, password, deviceId }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Falha na autenticação");
-      sessionStorage.setItem("fortify-preauth", data.preAuthToken);
       sessionStorage.setItem("fortify-user", user);
+      sessionStorage.setItem("fortify-mfa-methods", JSON.stringify(data.mfaMethods ?? ["alternative"]));
       router.push("/glass/mfa");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Falha inesperada");
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -48,11 +52,11 @@ export default function LoginPage() {
         {error && <div className="error">{error}</div>}
         <div className="field">
           <label>IDENTIDADE / E-MAIL CORPORATIVO</label>
-          <div className="inputWrap"><input value={user} onChange={(e)=>setUser(e.target.value)} autoComplete="username" /></div>
+          <div className="inputWrap"><input value={user} onChange={(e) => setUser(e.target.value)} autoComplete="username" /></div>
         </div>
         <div className="field">
           <label>SENHA / PIN DE ACESSO</label>
-          <div className="inputWrap"><input value={password} onChange={(e)=>setPassword(e.target.value)} type="password" autoComplete="current-password" /></div>
+          <div className="inputWrap"><input value={password} onChange={(e) => setPassword(e.target.value)} type="password" autoComplete="current-password" /></div>
         </div>
         <div className="formRow">
           <button className="primaryBtn" disabled={loading}>{loading ? "VALIDANDO IDENTIDADE..." : "CONTINUAR COM SEGURANÇA"}</button>
