@@ -1,147 +1,318 @@
-# Fortify Subsea XR — Smart Glasses + WebXR | Production-ready Demo
+<div align="center">
 
-Protótipo acadêmico em Next.js para demonstrar acesso seguro a IA e dados restritos por meio de Smart Glasses, com um módulo WebXR/VR usado como emulador da experiência vestível em uma missão submarina/offshore fictícia durante a apresentação.
+# 🛡️ Fortify Subsea XR
 
-> **Importante:** este repositório é um protótipo de demonstração para o desafio SENAI. Não representa sistema oficial, integração produtiva ou solução homologada pela Petrobras. Os dados industriais mostrados no cenário XR são totalmente fictícios.
+### Secure AI Access for Smart Glasses, XR & Industrial Operations
 
-## O que está pronto
+**Cybersecurity · IAM · MFA · Device Trust · Zero Trust · WebGL · WebXR · Next.js**
 
-- Identidade + senha/PIN
-- MFA em estágio separado com TOTP (Authenticator) ou código alternativo
-- Device Binding durante a autenticação
-- Allowlist de Device IDs
-- Pré-auth e MFA em cookies `httpOnly` de curta duração
-- JWT HMAC-SHA256
-- Cookie de sessão `httpOnly`, `SameSite=Strict` e `Secure` em produção
-- RBAC com `ai.query` e `documents.read`
-- Fortify Security Gateway
-- Endpoint de IA com chave mantida no servidor
-- Auditoria em logs JSON
-- Simulador subsea no navegador, com leito marinho, dutos, riser, skid/manifold e partículas de água
-- WebXR `immersive-vr` sem dependência externa de engine 3D
-- Módulo submarino fictício P-101 protegido por autorização, com profundidade e telemetria simuladas
-- Painel de arquitetura
-- Página de documentação técnica completa
-- Layout corporativo para apresentação
+[![Next.js](https://img.shields.io/badge/Next.js-16.2.8-000000?logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=000)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![WebGL](https://img.shields.io/badge/WebGL-3D-990000?logo=webgl&logoColor=white)](https://www.khronos.org/webgl/)
+[![WebXR](https://img.shields.io/badge/WebXR-Immersive-0A84FF)](https://immersiveweb.dev/)
+[![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?logo=vercel&logoColor=white)](https://vercel.com/)
 
-## Rotas
+🌐 **Live Demo:** https://fortify-smart-glass.vercel.app
 
-| Rota | Função |
-| --- | --- |
-| `/` | Home institucional |
-| `/vr` | Simulador XR + modo WebXR imersivo |
-| `/glass/login` | Login Smart Glasses |
-| `/glass/mfa` | MFA |
-| `/glass/device` | Device Trust |
-| `/glass/assistant` | Assistente protegido |
-| `/admin` | Arquitetura e cenários de demonstração |
-| `/documentacao` | Documentação completa |
+</div>
 
-## APIs
+---
 
-| Método | Endpoint | Controle |
-| --- | --- | --- |
-| POST | `/api/fortify/auth/login` | identidade + credencial |
-| POST | `/api/fortify/auth/mfa` | token pré-auth + MFA |
-| POST | `/api/fortify/device/validate` | Device Binding + allowlist |
-| GET | `/api/fortify/auth/session` | cookie autenticado |
-| POST | `/api/fortify/auth/logout` | encerra sessão |
-| POST | `/api/fortify/ai/query` | `ai.query` |
-| POST | `/api/fortify/xr/equipment` | `documents.read` |
+## 🌊 Sobre o projeto
 
-## Arquitetura
+**Fortify Subsea XR** é um protótipo de cibersegurança que demonstra como proteger o acesso a **IA corporativa e dados industriais** quando o usuário utiliza **Smart Glasses, headsets XR ou outros dispositivos vestíveis**.
+
+A ideia central é simples: o wearable **não acessa diretamente** o serviço de IA ou o recurso protegido. Toda requisição passa pelo **Fortify Security Gateway**, que verifica identidade, MFA, confiança do dispositivo, sessão e permissão antes de liberar qualquer dado.
+
+O projeto também possui uma experiência **Subsea XR** em ambiente submarino 3D, criada para demonstrar esse fluxo de segurança de forma visual e imersiva.
+
+> [!IMPORTANT]
+> Este repositório é um **protótipo acadêmico e demonstrativo**. Não é um produto oficial, homologado ou operado pela Petrobras. Nomes e marcas de terceiros pertencem aos seus respectivos titulares. Os dados industriais exibidos são fictícios.
+
+---
+
+## ✨ Principais recursos
+
+- 🔐 Autenticação de identidade em múltiplas etapas
+- 🔢 MFA com **TOTP** e código alternativo de contingência
+- 🥽 **Device Trust** com allowlist de dispositivos
+- 🎟️ Sessão autenticada com **JWT**
+- 🍪 Cookies de sessão `httpOnly`
+- 🧭 Autorização baseada em **RBAC**
+- 🛡️ **Fortify Security Gateway** entre o wearable e a IA
+- 🧾 Logs e auditoria de operações
+- 🌊 Simulador Subsea em **WebGL 3D** para desktop
+- 🥽 Suporte a **WebXR / immersive-vr** em headsets compatíveis
+- 🤖 ROV animado, partículas, iluminação e atmosfera submarina
+- 🏭 Inspeção simulada do módulo industrial fictício **P-101**
+- 📡 HUD imersivo com telemetria e estado de segurança
+- 📚 Página de documentação técnica dentro da aplicação
+- ☁️ Deploy preparado para **Vercel**
+
+---
+
+## 🧠 Conceito de segurança
+
+Sem o Fortify:
 
 ```text
-SMART GLASSES / HEADSET VR (simulação)
-                │
-                │ HTTPS / TLS
-                ▼
-      FORTIFY SECURITY GATEWAY
-                │
-                ├── Identidade
-                ├── MFA
-                ├── Device Trust
-                ├── JWT
-                ├── RBAC
-                └── Auditoria
-                │
-        somente se autorizado
-                │
-       ┌────────┴─────────┐
-       ▼                  ▼
- IA / LLM          P-101 SUBSEA
- corporativo       dados fictícios
+Smart Glasses / XR
+        ↓
+Acesso direto à IA / dados
 ```
 
-## Variáveis de ambiente
+Com o Fortify:
 
-Copie `.env.example` para `.env.local`.
+```text
+Smart Glasses / XR
+        ↓
+Identidade
+        ↓
+MFA
+        ↓
+Device Trust
+        ↓
+JWT / Sessão segura
+        ↓
+Fortify Security Gateway
+        ↓
+RBAC + Auditoria
+        ↓
+IA / LLM / Dados industriais
+```
+
+---
+
+## 🏗️ Arquitetura
+
+```mermaid
+flowchart TD
+    A[Smart Glasses / XR Device] --> B[Identity]
+    B --> C[MFA]
+    C --> D[Device Trust]
+    D --> E[JWT + Secure Session]
+    E --> F[Fortify Security Gateway]
+    F --> G{RBAC}
+    G -->|Authorized| H[Corporate AI / LLM]
+    G -->|Authorized| I[Simulated Industrial Data]
+    G -->|Denied| J[Access Blocked]
+    F --> K[Audit Logs]
+```
+
+A camada de segurança é independente do modelo de IA. Isso permite proteger diferentes serviços sem colocar credenciais do LLM diretamente no dispositivo cliente.
+
+---
+
+## 🔑 Fluxo de autenticação
+
+```text
+/glass/login
+      ↓
+/glass/mfa
+      ↓
+/glass/device
+      ↓
+Secure Session
+      ↓
+/vr
+```
+
+Depois da autenticação completa, o ambiente XR recebe o estado:
+
+```text
+IDENTITY        ✓
+MFA             ✓
+DEVICE TRUST    ✓
+JWT SESSION     ✓
+RBAC            ✓
+```
+
+Caso o dispositivo não seja confiável, o acesso é bloqueado mesmo que usuário e MFA estejam corretos.
+
+---
+
+## 🥽 Fortify Subsea XR
+
+A rota `/vr` transforma a arquitetura de segurança em uma demonstração visual.
+
+### Ambiente simulado
+
+O cenário possui:
+
+- leito oceânico em 3D;
+- névoa e profundidade submarina;
+- partículas e bolhas;
+- dutos e risers;
+- estruturas subsea;
+- ROV animado;
+- módulo industrial **P-101**;
+- HUD de inspeção;
+- telemetria simulada;
+- scanner de equipamentos;
+- liberação de informações somente após autorização.
+
+### Desktop Simulator
+
+No computador, o cenário usa **WebGL** e pode ser explorado com mouse e teclado.
+
+### Immersive WebXR
+
+Em browsers/headsets compatíveis, o projeto pode solicitar:
+
+```text
+immersive-vr
+```
+
+permitindo uma experiência XR real.
+
+---
+
+## 🛡️ Controles implementados
+
+### Identity Authentication
+
+O usuário precisa possuir credenciais válidas para iniciar a cadeia de autenticação.
+
+### Multi-Factor Authentication
+
+O projeto suporta:
+
+- TOTP para aplicativos autenticadores;
+- código alternativo de contingência para demonstração.
+
+### Device Trust
+
+O equipamento precisa estar presente na allowlist configurada no servidor.
+
+### JWT + Secure Session
+
+Depois de completar todas as etapas, é emitida uma sessão autenticada. A sessão é enviada por cookie `httpOnly` e validada no servidor antes da abertura da área protegida.
+
+### RBAC
+
+Recursos protegidos podem exigir permissões específicas, por exemplo:
+
+```text
+ai.query
+documents.read
+```
+
+### Audit
+
+Operações relevantes podem ser registradas para rastreabilidade e demonstração de auditoria.
+
+---
+
+## ⚙️ Stack
+
+| Camada | Tecnologia |
+|---|---|
+| Framework | Next.js 16 |
+| UI | React 19 |
+| Linguagem | TypeScript |
+| 3D | WebGL |
+| XR | WebXR |
+| Autenticação | JWT + MFA |
+| Sessão | Cookies `httpOnly` |
+| Autorização | RBAC |
+| Hosting | Vercel |
+
+---
+
+## 📁 Estrutura principal
+
+```text
+app/
+├── glass/
+│   ├── login/
+│   ├── mfa/
+│   ├── device/
+│   └── assistant/
+│
+├── vr/
+├── admin/
+├── documentacao/
+│
+└── api/
+    └── fortify/
+        ├── auth/
+        ├── mfa/
+        ├── device/
+        ├── session/
+        ├── ai/
+        └── xr/
+```
+
+---
+
+## 💻 Executando localmente
+
+### 1. Clone
+
+```bash
+git clone <URL_DO_SEU_REPOSITORIO>
+cd fortify-subsea-xr
+```
+
+### 2. Instale
+
+```bash
+npm install
+```
+
+### 3. Configure o ambiente
+
+Copie `.env.example` para `.env.local` e configure seus próprios valores:
 
 ```env
-FORTIFY_DEMO_USER=colaborador@fortify.local
-FORTIFY_DEMO_PASSWORD=Fortify@123
-FORTIFY_TOTP_SECRET=<segredo-base32-do-authenticator>
-FORTIFY_MFA_RECOVERY_CODE=246810
-FORTIFY_DEMO_MFA_CODE=246810
-FORTIFY_ALLOWED_DEVICE_IDS=FORTIFY-GLASS-001,FORTIFY-GLASS-002
-FORTIFY_JWT_SECRET=<segredo-com-32-ou-mais-caracteres>
+FORTIFY_DEMO_USER=your_demo_user
+FORTIFY_DEMO_PASSWORD=your_demo_password
+FORTIFY_MFA_RECOVERY_CODE=your_demo_code
+FORTIFY_ALLOWED_DEVICE_IDS=FORTIFY-GLASS-001
+FORTIFY_JWT_SECRET=YOUR_LONG_RANDOM_SECRET
+FORTIFY_SESSION_TTL_SECONDS=14400
+
+# Optional
+FORTIFY_TOTP_SECRET=
 LLM_ENDPOINT=
 LLM_API_KEY=
 ```
 
-### Gerar FORTIFY_JWT_SECRET no Windows PowerShell
+> [!WARNING]
+> Nunca publique `.env.local`, JWT secrets, tokens, senhas reais, certificados privados ou chaves de API.
 
-```powershell
-$bytes = New-Object byte[] 48
-[System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
-[Convert]::ToBase64String($bytes)
-```
+### 4. Execute
 
-Ou com Node.js:
-
-```powershell
-node -e "console.log(require('crypto').randomBytes(48).toString('base64'))"
-```
-
-
-## MFA da versão de produção
-
-O Fortify agora aceita dois métodos na segunda etapa:
-
-- **TOTP**: código de 6 dígitos de Google Authenticator, Microsoft Authenticator, 1Password, Authy ou aplicativo compatível.
-- **Código alternativo**: contingência configurada em `FORTIFY_MFA_RECOVERY_CODE`. Para a demonstração, pode continuar em `246810`; em operação real deve ser aleatório e rotacionado após uso.
-
-Para gerar um segredo TOTP sem OpenSSL:
-
-```powershell
-npm run mfa:secret
-```
-
-O comando imprime `FORTIFY_TOTP_SECRET` e uma URI `otpauth://`. Cadastre o segredo no aplicativo autenticador e copie o valor para a Vercel. Se `FORTIFY_TOTP_SECRET` ficar vazio, o botão de Authenticator não é apresentado e o código alternativo continua disponível.
-
-Os tokens de pré-autenticação e MFA não ficam mais no `sessionStorage`; são mantidos em cookies `httpOnly`, `SameSite=Strict` e `Secure` no deployment de produção.
-
-> Manter `colaborador@fortify.local` / `Fortify@123` é adequado para a demonstração solicitada. Para uso corporativo real, substitua essa identidade fixa por IdP OIDC/SAML e política corporativa de senha/passkey.
-
-## Executar localmente
-
-```powershell
-npm install
-copy .env.example .env.local
+```bash
 npm run dev
 ```
 
-Abra:
+Acesse:
 
 ```text
 http://localhost:3000
 ```
 
-O modo desktop da rota `/vr` funciona localmente. O modo WebXR imersivo depende do navegador/headset e normalmente deve ser testado em contexto seguro HTTPS.
+---
 
-## Deploy na Vercel
+## 🗺️ Rotas
 
-Configure:
+| Rota | Descrição |
+|---|---|
+| `/` | Apresentação do projeto |
+| `/glass/login` | Login / identidade |
+| `/glass/mfa` | Segundo fator |
+| `/glass/device` | Device Trust |
+| `/vr` | Fortify Subsea XR |
+| `/admin` | Console demonstrativo |
+| `/documentacao` | Documentação técnica |
+
+---
+
+## ☁️ Deploy na Vercel
+
+Configuração recomendada:
 
 ```text
 Framework Preset: Next.js
@@ -150,157 +321,123 @@ Output Directory: Automatic
 Install Command: Automatic
 ```
 
-**Não configure `public` como Output Directory.**
-
-Cadastre as variáveis de ambiente e faça um novo redeploy após qualquer alteração nelas.
-
-## Teste do fluxo
-
-Credenciais de demonstração, se mantidos os valores do `.env.example`:
+Cadastre os segredos em:
 
 ```text
-Usuário: colaborador@fortify.local
-Senha: Fortify@123
-MFA alternativo: 246810
-Device ID: FORTIFY-GLASS-001
+Project → Settings → Environment Variables
 ```
 
-Fluxo:
+> Não configure `public` como Output Directory para esta aplicação Next.js.
+
+---
+
+## 🧪 Cenários demonstrados
+
+### ✅ Usuário + MFA + dispositivo confiável
 
 ```text
-Login
-  ↓
-MFA
-  ↓
-Device Trust
-  ↓
-Sessão autenticada
-  ↓
-/vr
-  ↓
-Escanear P-101 no campo submarino
-  ↓
-Fortify verifica documents.read
-  ↓
-Dados liberados
-  ↓
-Consulta à IA
-  ↓
-Fortify verifica ai.query
+Valid User
+    ↓
+Valid MFA
+    ↓
+Trusted Device
+    ↓
+Valid Session
+    ↓
+RBAC Authorized
+    ↓
+ACCESS GRANTED
 ```
 
-
-## Experiência Subsea XR
-
-A rota `/vr` agora possui uma ambientação submarina pensada para apresentação: fundo oceânico, feixes de luz, bolhas/partículas, leito marinho, dutos, riser e um skid/manifold simplificado em torno do P-101. No modo imersivo, os elementos são renderizados diretamente em WebGL sem modelos externos pesados, mantendo o protótipo leve para headsets como o Meta Quest 2.
-
-Os dados exibidos — incluindo profundidade de `1.820 m`, pressão, temperatura, vazão e vibração — são **100% simulados** e existem apenas para demonstrar o controle de acesso do Fortify.
-
-## Teste com VR / WebXR
-
-1. Faça deploy em HTTPS.
-2. Abra `https://SEU-DOMINIO/vr` no navegador do headset.
-3. Conclua Login → MFA → Device Trust.
-4. Clique em **ENTRAR NO MODO IMERSIVO**.
-5. O ambiente WebXR renderiza um campo submarino leve com leito marinho, dutos, riser, skid/manifold, partículas d'água, módulo P-101 e o HUD Fortify.
-6. Pressione o gatilho do controlador para carregar/alternar os dados autorizados do módulo submarino.
-
-Se o headset ou navegador não disponibilizar `navigator.xr`, a página informa que o modo imersivo não está disponível e continua funcionando como simulador desktop.
-
-## Demonstrações de segurança para a banca
-
-### Cenário 1 — acesso autorizado
-
-Usuário correto + MFA correto + Device ID permitido → sessão emitida → dados e IA liberados.
-
-### Cenário 2 — dispositivo bloqueado
-
-Use outro Device ID, por exemplo:
+### ⛔ Dispositivo não confiável
 
 ```text
-VR-NAO-AUTORIZADO
+Valid User
+    ↓
+Valid MFA
+    ↓
+Unknown Device
+    ↓
+ACCESS DENIED
 ```
 
-Mesmo com usuário e MFA corretos, o Fortify bloqueia a sessão na etapa Device Trust.
-
-### Cenário 3 — endpoint protegido
-
-Sem sessão autenticada, `/api/fortify/xr/equipment` retorna `401` e não libera os valores fictícios do P-101.
-
-### Cenário 4 — acesso à IA mediado
-
-O navegador não recebe `LLM_API_KEY`. A rota do Gateway valida a sessão e a permissão antes de encaminhar qualquer solicitação.
-
-## Limites do protótipo
-
-A solução implementa a prova de conceito da camada de acesso. Para produção, seriam necessárias integrações como:
-
-- IdP corporativo OIDC/SAML
-- WebAuthn/FIDO2 ou MFA homologado
-- certificados por dispositivo e MDM/UEM
-- RBAC/ABAC corporativo
-- SIEM
-- DLP
-- KMS/secret manager
-- retenção e classificação formal de dados
-- hardening do dispositivo vestível
-- integração real com LLM e APIs corporativas aprovadas
-
-## Estrutura principal
+### ⛔ Permissão insuficiente
 
 ```text
-app/
-├── api/fortify/
-│   ├── auth/
-│   ├── device/
-│   ├── ai/query/
-│   └── xr/equipment/
-├── admin/
-├── documentacao/
-├── glass/
-└── vr/
-
-components/
-├── VRExperience.tsx
-├── Logo.tsx
-├── PetrobrasLogo.tsx
-├── SiteHeader.tsx
-└── SiteFooter.tsx
-
-lib/
-├── audit.ts
-├── config.ts
-└── crypto.ts
+Authenticated Session
+    ↓
+Protected Resource
+    ↓
+RBAC Denied
+    ↓
+ACCESS DENIED + AUDIT
 ```
 
-## Correção V5 — orientação do painel XR
+---
 
-A malha do painel WebXR agora usa coordenadas UV padrão (base `v=0`, topo `v=1`) e mantém uma única inversão do Canvas durante o upload da textura com `UNPACK_FLIP_Y_WEBGL`. Isso corrige o painel/HUD que podia aparecer de ponta-cabeça em sessão XR.
+## 🔮 Roadmap
 
-## Subsea XR V7 — simulador imersivo 3D
+Uma evolução corporativa poderia incluir:
 
-A rota `/vr` agora possui um renderer WebGL 3D próprio para o modo desktop, além do modo WebXR para headset. O cenário não é apenas uma imagem: o ambiente é renderizado em tempo real com iluminação, fog submarino, skid P-101, dutos, riser, estruturas distantes, ROV, partículas, scan pulse e HUD interativo.
+- Identity Provider corporativo / OIDC;
+- Microsoft Entra ID;
+- WebAuthn / FIDO2;
+- Hardware Security Keys;
+- MDM;
+- certificados por dispositivo;
+- SIEM;
+- DLP;
+- banco persistente para usuários e sessões;
+- políticas Zero Trust avançadas;
+- rotação de tokens;
+- integração com LLM corporativo real;
+- Digital Twin;
+- telemetria industrial real;
+- assets 3D industriais de maior fidelidade;
+- integração com Smart Glasses reais.
 
-Controles no desktop:
-- Mouse: parallax/olhar em volta.
-- W/A/S/D ou setas: deslocamento limitado da câmera.
-- Clique no P-101 / painel de missão: solicita a telemetria pela API protegida.
-- Botão de tela cheia: demonstração em formato de visor.
+---
 
-A liberação dos dados continua dependendo da sessão autenticada, MFA, Device Trust e RBAC do Fortify Security Gateway.
+## 🎯 O que este projeto demonstra
 
+`Cybersecurity` · `IAM` · `MFA` · `JWT` · `RBAC` · `Zero Trust` · `Secure Gateway` · `Next.js` · `React` · `TypeScript` · `WebGL` · `WebXR` · `XR Security` · `Industrial UX` · `Cloud Deployment`
 
-## V9 — fluxo único de autenticação e saída do modo imersivo
+---
 
-- Fluxo oficial: `/glass/login` → `/glass/mfa` → `/glass/device` → `/vr`.
-- `/glass/assistant` agora redireciona para `/vr`; não existe mais uma tela de chat paralela após liberar o dispositivo.
-- `/vr` é uma rota protegida pelo `proxy.ts` e só abre com sessão autenticada.
-- O simulador desktop possui botão explícito **TELA CHEIA / SAIR** e, em fullscreen, um botão fixo **SAIR DA TELA CHEIA**.
-- Uma sessão WebXR ativa troca o botão principal para **SAIR DO MODO IMERSIVO**. Em controles WebXR compatíveis, o evento `squeeze`/grip também encerra a sessão.
-- O fullscreen usa `100dvh/100dvw` e safe-area para impedir que HUD e controles fiquem cortados pela interface do navegador.
+## 🔒 Antes de tornar o repositório público
 
-## Fluxo de sessão V10
+Verifique se nenhum segredo foi commitado no histórico:
 
-Após `POST /api/fortify/device/validate`, o navegador confirma imediatamente o cookie `fortify_session` chamando `/api/fortify/auth/session`. Somente depois dessa confirmação ocorre uma navegação completa para `/vr`.
+```text
+.env
+.env.local
+API keys
+JWT secrets
+access tokens
+private certificates
+production passwords
+```
 
-A rota `/vr` valida a sessão diretamente no runtime Node da aplicação (`force-dynamic`) e não depende mais de `proxy.ts`/middleware para validar um cookie recém-emitido. Isso evita redirecionamentos incorretos ao login causados por cache/prefetch de navegação ou diferenças de runtime.
+O `.gitignore` deste projeto já ignora os principais arquivos de ambiente, mas se uma chave real tiver sido commitada anteriormente, **rotacione essa chave antes de tornar o repositório público**.
+
+---
+
+## ⚠️ Disclaimer
+
+Fortify Subsea XR é um **protótipo acadêmico e tecnológico** criado para demonstrar conceitos de segurança aplicados a wearables, IA e XR.
+
+A utilização da identidade Petrobras no protótipo serve exclusivamente para contextualização do desafio de inovação. Este projeto **não representa produto oficial, parceria comercial ou solução homologada pela Petrobras**.
+
+Todos os equipamentos, valores operacionais, telemetria e dados industriais exibidos na simulação são fictícios.
+
+---
+
+<div align="center">
+
+### ⭐ Fortify Subsea XR
+
+**Secure access. Trusted devices. Protected intelligence.**
+
+Se o projeto foi útil ou interessante, considere deixar uma **Star ⭐** no repositório.
+
+</div>
