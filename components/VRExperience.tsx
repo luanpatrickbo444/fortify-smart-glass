@@ -61,13 +61,28 @@ function scale(x: number, y: number, z: number): Mat4 {
   return out;
 }
 
+function rotationX(rad: number): Mat4 {
+  const c = Math.cos(rad), s = Math.sin(rad);
+  return new Float32Array([1,0,0,0, 0,c,s,0, 0,-s,c,0, 0,0,0,1]);
+}
+
 function rotationY(rad: number): Mat4 {
   const c = Math.cos(rad), s = Math.sin(rad);
   return new Float32Array([c,0,-s,0, 0,1,0,0, s,0,c,0, 0,0,0,1]);
 }
 
-function modelMatrix(x: number, y: number, z: number, sx: number, sy: number, sz: number, ry = 0) {
-  return multiply(translation(x,y,z), multiply(rotationY(ry), scale(sx,sy,sz)));
+function rotationZ(rad: number): Mat4 {
+  const c = Math.cos(rad), s = Math.sin(rad);
+  return new Float32Array([c,s,0,0, -s,c,0,0, 0,0,1,0, 0,0,0,1]);
+}
+
+function modelMatrix(
+  x: number, y: number, z: number,
+  sx: number, sy: number, sz: number,
+  rx = 0, ry = 0, rz = 0,
+): Mat4 {
+  const rotation = multiply(rotationY(ry), multiply(rotationX(rx), rotationZ(rz)));
+  return multiply(translation(x,y,z), multiply(rotation, scale(sx,sy,sz)));
 }
 
 function compileShader(gl: WebGLRenderingContext, type: number, source: string) {
