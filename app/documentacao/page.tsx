@@ -35,7 +35,7 @@ const tests = [
   ["Rota protegida", "A página do assistente sem sessão válida deve redirecionar para o login."],
   ["Permissão ausente", "Consulta à IA sem ai.query deve retornar 403."],
   ["Logout", "O cookie de sessão deve ser removido e o acesso subsequente deve falhar."],
-  ["Dados XR sem sessão", "A consulta ao ativo P-101 deve retornar 401 sem sessão autenticada."],
+  ["Dados XR sem sessão", "A consulta ao módulo submarino P-101 deve retornar 401 sem sessão autenticada."],
   ["WebXR", "Em HTTPS/headset compatível, a sessão immersive-vr deve abrir; em desktop sem WebXR, o simulador deve permanecer funcional."],
 ];
 
@@ -321,21 +321,21 @@ npm run dev`}</pre>
                 <i>↓ HTTPS</i>
                 <div className="docsArchNode gateway"><small>SEGURANÇA</small><strong>Fortify Security Gateway</strong><span>Identity • MFA • Device Trust • JWT • RBAC • Audit</span></div>
                 <i>↓ autorização</i>
-                <div className="docsArchNode"><small>RECURSOS</small><strong>IA + dados simulados</strong><span>LLM e ativo industrial P-101</span></div>
+                <div className="docsArchNode"><small>RECURSOS</small><strong>IA + dados simulados</strong><span>LLM e módulo submarino P-101</span></div>
               </div>
               <div className="docTwoCols">
-                <div><h3>Modo desktop</h3><p>Funciona em qualquer navegador moderno como simulador 2D/3D, permitindo autenticar, consultar o equipamento P-101 e usar o assistente sem headset.</p></div>
-                <div><h3>Modo imersivo</h3><p>Em HTTPS e navegador compatível com WebXR, o botão de modo imersivo inicia uma sessão <code>immersive-vr</code> com configuração mínima para maximizar a compatibilidade. Depois, o Fortify tenta <code>local-floor</code>, <code>local</code> e por fim <code>viewer</code> como espaços de referência, renderiza o ativo em WebGL e apresenta o HUD de autorização.</p></div>
+                <div><h3>Modo desktop</h3><p>Funciona em navegador moderno como simulador 2D/3D de um campo submarino fictício, permitindo autenticar, inspecionar o módulo P-101 e usar o assistente sem headset.</p></div>
+                <div><h3>Modo imersivo</h3><p>Em HTTPS e navegador compatível com WebXR, o botão de modo imersivo inicia uma sessão <code>immersive-vr</code> com configuração mínima para maximizar a compatibilidade. Depois, o Fortify tenta <code>local-floor</code>, <code>local</code> e por fim <code>viewer</code> como espaços de referência, renderiza um cenário subsea leve em WebGL — leito marinho, dutos, riser, skid/manifold, partículas de água e o módulo P-101 — e apresenta o HUD de autorização.</p></div>
               </div>
               <h3>Interação da demonstração</h3>
               <ol className="flowList">
                 <li><b>Autenticar.</b><span>O operador conclui identidade, MFA e Device Trust na própria rota XR.</span></li>
                 <li><b>Entrar no ambiente.</b><span>O navegador solicita uma sessão WebXR somente depois da sessão Fortify estar autenticada.</span></li>
-                <li><b>Selecionar o ativo.</b><span>O controlador do headset ou o simulador solicita o ativo P-101.</span></li>
+                <li><b>Selecionar o ativo.</b><span>O controlador do headset ou o simulador aponta para o módulo submarino P-101 e solicita seus dados operacionais fictícios.</span></li>
                 <li><b>Autorizar os dados.</b><span>O endpoint XR exige o cookie de sessão e a permissão <code>documents.read</code>.</span></li>
                 <li><b>Consultar IA.</b><span>A análise é enviada ao endpoint <code>/api/fortify/ai/query</code>, que exige <code>ai.query</code> e mantém a credencial do LLM no servidor.</span></li>
               </ol>
-              <div className="docCallout warning"><b>Limite da simulação</b><span>O cenário industrial e os valores do ativo P-101 são dados fictícios para demonstração. Não representam informação operacional da Petrobras. A marca é usada no contexto acadêmico do desafio e o protótipo não deve ser apresentado como sistema oficial ou homologado.</span></div>
+              <div className="docCallout warning"><b>Limite da simulação</b><span>O cenário submarino, a profundidade, o módulo P-101 e todos os valores operacionais são fictícios para demonstração. Não representam informação operacional da Petrobras. A marca é usada no contexto acadêmico do desafio e o protótipo não deve ser apresentado como sistema oficial ou homologado.</span></div>
               <h3>Requisitos para testar em headset</h3>
               <pre className="docCode">{`1. Fazer deploy HTTPS (ex.: Vercel)
 2. Abrir /vr no navegador do headset

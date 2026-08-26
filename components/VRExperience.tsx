@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { FormEvent, type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { PetrobrasLogo } from "@/components/PetrobrasLogo";
@@ -22,6 +22,8 @@ type EquipmentData = {
   pressureBar: number;
   temperatureC: number;
   vibrationMmS: number;
+  flowRateM3h: number;
+  depthM: number;
   classification: string;
   lastUpdate: string;
 };
@@ -114,10 +116,10 @@ function createPanelCanvas(session: SessionInfo | null, equipment: EquipmentData
 
   ctx.fillStyle = "#ffd52f";
   ctx.font = "700 28px Arial";
-  ctx.fillText("FORTIFY / SECURE XR", 70, 90);
+  ctx.fillText("FORTIFY / SUBSEA SECURE XR", 70, 90);
   ctx.fillStyle = "#ffffff";
   ctx.font = "800 46px Arial";
-  ctx.fillText(details ? "EQUIPAMENTO P-101" : "SESSÃO AUTORIZADA", 70, 155);
+  ctx.fillText(details ? "ATIVO SUBSEA P-101" : "SESSÃO SUBSEA AUTORIZADA", 70, 155);
 
   ctx.fillStyle = "#7ce3ae";
   ctx.font = "600 24px Arial";
@@ -135,17 +137,18 @@ function createPanelCanvas(session: SessionInfo | null, equipment: EquipmentData
     ctx.fillText(`PRESSÃO: ${equipment.pressureBar} bar`, 650, 320);
     ctx.fillText(`TEMPERATURA: ${equipment.temperatureC} °C`, 650, 365);
     ctx.fillText(`VIBRAÇÃO: ${equipment.vibrationMmS} mm/s`, 650, 410);
+    ctx.fillText(`VAZÃO: ${equipment.flowRateM3h} m³/h`, 650, 455);
     ctx.fillStyle = "#ffd52f";
     ctx.font = "700 21px Arial";
-    ctx.fillText(`CLASSIFICAÇÃO: ${equipment.classification}`, 650, 460);
+    ctx.fillText(`PROFUNDIDADE: ${equipment.depthM} m • ${equipment.classification}`, 650, 500);
   } else {
     ctx.fillStyle = "#dcebe5";
     ctx.font = "500 25px Arial";
-    ctx.fillText("Aponte para o ativo industrial e pressione o gatilho", 650, 240);
+    ctx.fillText("Aponte para o módulo submarino e pressione o gatilho", 650, 240);
     ctx.fillText("para alternar os dados autorizados do equipamento.", 650, 282);
     ctx.fillStyle = "#ffd52f";
     ctx.font = "700 22px Arial";
-    ctx.fillText("DEMONSTRAÇÃO WEBXR • DADOS SIMULADOS", 650, 350);
+    ctx.fillText("DEMONSTRAÇÃO SUBSEA WEBXR • DADOS SIMULADOS", 650, 350);
   }
 
   ctx.fillStyle = "rgba(255,255,255,.65)";
@@ -363,11 +366,32 @@ export function VRExperience() {
       const cubeVbo = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, cubeVbo); gl.bufferData(gl.ARRAY_BUFFER, cubeVerts, gl.STATIC_DRAW);
       const cubeIbo = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeIbo); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, cubeIdx, gl.STATIC_DRAW);
 
-      const quad = new Float32Array([-1,-0.5,0, 0,1,  1,-0.5,0, 1,1,  1,0.5,0, 1,0,  -1,0.5,0, 0,0]);
+      // Canvas textures use a top-left origin while WebGL UVs use a bottom-left origin.
+      // Keep standard bottom->top UVs here and flip the uploaded canvas once via
+      // UNPACK_FLIP_Y_WEBGL below. The previous version inverted both the UVs and
+      // the upload, causing the Fortify XR panel to appear upside down.
+      const quad = new Float32Array([
+        -1,-0.5,0, 0,0,
+         1,-0.5,0, 1,0,
+         1, 0.5,0, 1,1,
+        -1, 0.5,0, 0,1
+      ]);
       const quadIdx = new Uint16Array([0,1,2,0,2,3]);
       const quadVbo = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, quadVbo); gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW);
       const quadIbo = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, quadIbo); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, quadIdx, gl.STATIC_DRAW);
       const panelTexture = gl.createTexture();
+
+      // Pequeno campo de partículas para reforçar a sensação de coluna d'água
+      // sem depender de assets 3D externos. Mantemos poucos elementos para
+      // preservar desempenho em headsets como o Meta Quest 2.
+      const subseaBubbles = Array.from({ length: 14 }, (_, i) => ({
+        x: -2.8 + ((i * 1.17) % 5.6),
+        z: -2.4 - ((i * 0.83) % 4.6),
+        y: (i * 0.31) % 3.1,
+        speed: 0.09 + (i % 4) * 0.025,
+        phase: i * 0.77,
+        size: 0.025 + (i % 3) * 0.012,
+      }));
 
       function updatePanel() {
         const panelCanvas = createPanelCanvas(sessionRef.current, equipmentRef.current, detailsVisibleRef.current);
@@ -413,7 +437,7 @@ export function VRExperience() {
         gl.uniform1i(gl.getUniformLocation(textureProgram,"u_texture"), 0);
         gl.uniformMatrix4fv(gl.getUniformLocation(textureProgram,"u_projection"), false, projection as any);
         gl.uniformMatrix4fv(gl.getUniformLocation(textureProgram,"u_view"), false, view as any);
-        gl.uniformMatrix4fv(gl.getUniformLocation(textureProgram,"u_model"), false, modelMatrix(0,1.65,-2.6,1.35,1.35,1));
+        gl.uniformMatrix4fv(gl.getUniformLocation(textureProgram,"u_model"), false, modelMatrix(1.05,1.62,-2.45,0.92,0.92,1));
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
       }
 
@@ -423,7 +447,7 @@ export function VRExperience() {
           gl.bindFramebuffer(gl.FRAMEBUFFER, baseLayer.framebuffer);
           gl.enable(gl.DEPTH_TEST);
           gl.enable(gl.CULL_FACE);
-          gl.clearColor(0.015,0.055,0.05,1);
+          gl.clearColor(0.004,0.035,0.085,1);
           gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
           for (const view of pose.views) {
             const viewport = baseLayer.getViewport(view);
@@ -431,11 +455,47 @@ export function VRExperience() {
             const projection = view.projectionMatrix;
             const viewMatrix = view.transform.inverse.matrix;
 
-            drawBox(projection, viewMatrix, modelMatrix(0,-0.04,-3.4,5.8,0.08,5.8), [0.08,0.13,0.12,1]);
-            drawBox(projection, viewMatrix, modelMatrix(0,0.45,-3.4,0.92,0.9,0.92), [0.0,0.42,0.26,1]);
-            drawBox(projection, viewMatrix, modelMatrix(0,1.15,-3.4,0.55,0.52,0.55), [0.98,0.78,0.08,1]);
-            drawBox(projection, viewMatrix, modelMatrix(-0.92,0.34,-3.4,0.85,0.28,0.28), [0.18,0.32,0.30,1]);
-            drawBox(projection, viewMatrix, modelMatrix(0.92,0.34,-3.4,0.85,0.28,0.28), [0.18,0.32,0.30,1]);
+            const t = _time * 0.001;
+
+            // Leito marinho
+            drawBox(projection, viewMatrix, modelMatrix(0,-0.07,-4.4,8.2,0.10,8.2), [0.065,0.105,0.095,1]);
+            drawBox(projection, viewMatrix, modelMatrix(-3.15,0.12,-5.5,1.15,0.35,1.0,0.25), [0.09,0.14,0.13,1]);
+            drawBox(projection, viewMatrix, modelMatrix(3.0,0.08,-6.0,1.55,0.28,1.25,-0.28), [0.08,0.125,0.12,1]);
+
+            // Dutos submarinos e riser
+            drawBox(projection, viewMatrix, modelMatrix(-2.15,0.24,-3.75,2.2,0.16,0.16), [0.20,0.34,0.36,1]);
+            drawBox(projection, viewMatrix, modelMatrix(1.7,0.24,-3.75,2.0,0.16,0.16), [0.20,0.34,0.36,1]);
+            drawBox(projection, viewMatrix, modelMatrix(2.95,0.82,-4.55,0.18,1.55,0.18), [0.24,0.39,0.40,1]);
+            drawBox(projection, viewMatrix, modelMatrix(2.95,1.62,-4.55,0.34,0.18,0.34), [0.96,0.72,0.08,1]);
+
+            // Skid / manifold P-101 submarino
+            drawBox(projection, viewMatrix, modelMatrix(-0.55,0.16,-3.65,1.95,0.16,1.5), [0.16,0.25,0.26,1]);
+            drawBox(projection, viewMatrix, modelMatrix(-1.32,0.70,-3.65,0.10,1.05,1.28), [0.14,0.29,0.29,1]);
+            drawBox(projection, viewMatrix, modelMatrix(0.22,0.70,-3.65,0.10,1.05,1.28), [0.14,0.29,0.29,1]);
+            drawBox(projection, viewMatrix, modelMatrix(-0.55,1.18,-3.65,1.65,0.10,1.25), [0.14,0.29,0.29,1]);
+
+            // Corpo principal da bomba
+            drawBox(projection, viewMatrix, modelMatrix(-0.55,0.57,-3.65,0.78,0.72,0.78), [0.0,0.40,0.30,1]);
+            drawBox(projection, viewMatrix, modelMatrix(-0.55,1.12,-3.65,0.42,0.32,0.42), [0.96,0.72,0.08,1]);
+            drawBox(projection, viewMatrix, modelMatrix(-1.28,0.50,-3.65,0.72,0.22,0.22), [0.24,0.40,0.40,1]);
+            drawBox(projection, viewMatrix, modelMatrix(0.18,0.50,-3.65,0.72,0.22,0.22), [0.24,0.40,0.40,1]);
+
+            // Módulos de instrumentação
+            drawBox(projection, viewMatrix, modelMatrix(-1.18,1.36,-3.35,0.26,0.34,0.26), [0.05,0.48,0.34,1]);
+            drawBox(projection, viewMatrix, modelMatrix(0.05,1.36,-3.35,0.26,0.34,0.26), [0.05,0.48,0.34,1]);
+            drawBox(projection, viewMatrix, modelMatrix(-1.18,1.58,-3.35,0.13,0.08,0.13), [0.96,0.76,0.10,1]);
+            drawBox(projection, viewMatrix, modelMatrix(0.05,1.58,-3.35,0.13,0.08,0.13), [0.96,0.76,0.10,1]);
+
+            // Partículas/b bolhas em movimento na coluna d'água
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            for (const bubble of subseaBubbles) {
+              const y = -0.05 + ((bubble.y + t * bubble.speed) % 3.15);
+              const x = bubble.x + Math.sin(t * 0.75 + bubble.phase) * 0.08;
+              drawBox(projection, viewMatrix, modelMatrix(x,y,bubble.z,bubble.size,bubble.size,bubble.size), [0.42,0.78,0.92,0.46]);
+            }
+            gl.disable(gl.BLEND);
+
             drawPanel(projection, viewMatrix);
           }
         }
@@ -475,9 +535,9 @@ export function VRExperience() {
 
       <section className="xrHero">
         <div>
-          <span className="xrEyebrow">FORTIFY XR • SMART GLASSES SIMULATOR</span>
-          <h1>Simulação imersiva do <em>acesso seguro</em> à IA industrial.</h1>
-          <p>O headset VR representa os Smart Glasses durante a prototipação. A autenticação, o vínculo do dispositivo, as permissões e o Security Gateway são os mesmos controles usados no fluxo web.</p>
+          <span className="xrEyebrow">FORTIFY SUBSEA XR • SMART GLASSES SIMULATOR</span>
+          <h1>Operação submarina simulada com <em>acesso seguro</em> à IA.</h1>
+          <p>O headset VR representa os Smart Glasses em uma missão offshore/subsea fictícia. O operador inspeciona um módulo submarino enquanto identidade, MFA, Device Trust, RBAC e o Fortify Security Gateway controlam cada acesso aos dados.</p>
         </div>
         <div className={`xrSupportBadge ${xrSupported ? "ok" : ""}`}>
           <span className="liveDot" />
@@ -487,23 +547,29 @@ export function VRExperience() {
 
       <section className="xrWorkspace">
         <div className="xrSceneCard">
-          <div className="xrSceneHead"><span>ÁREA INDUSTRIAL SIMULADA</span><b>UNIDADE / PROCESSO</b></div>
+          <div className="xrSceneHead"><span>CAMPO SUBMARINO SIMULADO</span><b>SUBSEA • PROFUNDIDADE 1.820 m</b></div>
           <div className="xrScene">
+            <div className="subseaLightRay rayOne" /><div className="subseaLightRay rayTwo" />
+            <div className="subseaBubbles" aria-hidden="true">{Array.from({length: 18}).map((_,i)=><span key={i} style={{ left: `${6 + i * 5.15}%`, bottom: `${-8 - (i % 4) * 4}%`, width: `${3 + (i % 5)}px`, height: `${3 + (i % 5)}px`, animationDuration: `${7 + (i % 6) * 1.1}s`, animationDelay: `${i * -0.55}s` } as CSSProperties} />)}</div>
+            <div className="subseaRock rockOne" /><div className="subseaRock rockTwo" /><div className="subseaRock rockThree" />
             <div className="xrGridFloor" />
-            <button className="xrPump" onClick={loadEquipment} disabled={stage !== "ready" || busy} aria-label="Consultar bomba P-101">
+            <div className="subseaPipeline pipeLeft" /><div className="subseaPipeline pipeRight" />
+            <div className="subseaRiser"><i /><b /></div>
+            <div className="subseaFrame"><i /><i /><i /><i /></div>
+            <button className="xrPump" onClick={loadEquipment} disabled={stage !== "ready" || busy} aria-label="Consultar módulo submarino P-101">
               <span className="pumpPipe left" /><span className="pumpPipe right" />
               <span className="pumpBody"><i /></span><span className="pumpBase" />
-              <strong>P-101</strong><small>BOMBA DE PROCESSO</small>
+              <strong>P-101</strong><small>MÓDULO SUBSEA • BOMBA</small>
               <span className="scanRing" />
             </button>
-            <div className="xrSceneLegend"><span className="liveDot" /> SELECIONE O ATIVO PARA SOLICITAR DADOS</div>
+            <div className="xrSceneLegend"><span className="liveDot" /> APONTE PARA O MÓDULO SUBSEA E SOLICITE DADOS</div>
           </div>
 
           <div className="xrControls">
             <button onClick={startImmersiveVR} className="xrPrimary" disabled={stage !== "ready" || xrActive}>
               {xrActive ? "SESSÃO VR ATIVA" : "ENTRAR NO MODO IMERSIVO"}
             </button>
-            <button onClick={loadEquipment} className="xrSecondary" disabled={stage !== "ready" || busy}>CONSULTAR P-101</button>
+            <button onClick={loadEquipment} className="xrSecondary" disabled={stage !== "ready" || busy}>ESCANEAR P-101</button>
           </div>
           {!xrSupported && <p className="xrHint">WebXR imersivo exige HTTPS e navegador/headset compatível. O simulador desktop continua totalmente funcional.</p>}
         </div>
@@ -562,11 +628,11 @@ export function VRExperience() {
       {stage === "ready" && (
         <section className="xrDataGrid">
           <article className="xrDataCard">
-            <div className="xrCardTitle"><span>ATIVO INDUSTRIAL</span><b>{equipment ? "DATA RELEASED" : "WAITING"}</b></div>
+            <div className="xrCardTitle"><span>ATIVO SUBSEA</span><b>{equipment ? "DATA RELEASED" : "WAITING"}</b></div>
             {equipment ? (
               <div className="equipmentReadout">
                 <header><strong>{equipment.id}</strong><span>{equipment.name}</span></header>
-                <div><span>Status<b>{equipment.status}</b></span><span>Pressão<b>{equipment.pressureBar} bar</b></span><span>Temperatura<b>{equipment.temperatureC} °C</b></span><span>Vibração<b>{equipment.vibrationMmS} mm/s</b></span></div>
+                <div><span>Status<b>{equipment.status}</b></span><span>Pressão<b>{equipment.pressureBar} bar</b></span><span>Temperatura<b>{equipment.temperatureC} °C</b></span><span>Vibração<b>{equipment.vibrationMmS} mm/s</b></span><span>Vazão<b>{equipment.flowRateM3h} m³/h</b></span><span>Profundidade<b>{equipment.depthM} m</b></span></div>
                 <footer>{equipment.classification} • Atualização simulada: {new Date(equipment.lastUpdate).toLocaleTimeString("pt-BR")}</footer>
               </div>
             ) : <p className="xrEmpty">Os dados permanecem ocultos até o Fortify validar a sessão e autorizar a consulta.</p>}
@@ -575,7 +641,7 @@ export function VRExperience() {
           <article className="xrDataCard">
             <div className="xrCardTitle"><span>ASSISTENTE IA VIA GATEWAY</span><b>RBAC ENFORCED</b></div>
             <form onSubmit={askAi} className="xrAiForm">
-              <textarea value={message} onChange={e=>setMessage(e.target.value)} placeholder="Ex.: Analise o estado da bomba P-101 e explique se os dados exigem atenção." maxLength={2000} />
+              <textarea value={message} onChange={e=>setMessage(e.target.value)} placeholder="Ex.: Analise o módulo submarino P-101 e explique se pressão, temperatura, vazão ou vibração exigem atenção." maxLength={2000} />
               <button disabled={busy || !message.trim()}>ENVIAR CONSULTA SEGURA</button>
             </form>
             {aiAnswer && <div className="xrAiAnswer"><b>FORTIFY / RESPOSTA AUTORIZADA</b><p>{aiAnswer}</p></div>}
@@ -584,7 +650,7 @@ export function VRExperience() {
       )}
 
       <section className="xrFlowBand">
-        <span>HEADSET VR / SMART GLASSES</span><i>→</i><span>IDENTIDADE</span><i>→</i><span>MFA</span><i>→</i><span>DEVICE TRUST</span><i>→</i><strong>FORTIFY GATEWAY</strong><i>→</i><span>IA / DADOS</span>
+        <span>HEADSET VR / SMART GLASSES • SUBSEA</span><i>→</i><span>IDENTIDADE</span><i>→</i><span>MFA</span><i>→</i><span>DEVICE TRUST</span><i>→</i><strong>FORTIFY GATEWAY</strong><i>→</i><span>IA / DADOS</span>
       </section>
     </main>
   );

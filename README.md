@@ -1,6 +1,6 @@
-# Fortify — Smart Glasses + WebXR | Production-ready Demo
+# Fortify Subsea XR — Smart Glasses + WebXR | Production-ready Demo
 
-Protótipo acadêmico em Next.js para demonstrar acesso seguro a IA e dados restritos por meio de Smart Glasses, com um módulo WebXR/VR usado como emulador da experiência vestível durante a apresentação.
+Protótipo acadêmico em Next.js para demonstrar acesso seguro a IA e dados restritos por meio de Smart Glasses, com um módulo WebXR/VR usado como emulador da experiência vestível em uma missão submarina/offshore fictícia durante a apresentação.
 
 > **Importante:** este repositório é um protótipo de demonstração para o desafio SENAI. Não representa sistema oficial, integração produtiva ou solução homologada pela Petrobras. Os dados industriais mostrados no cenário XR são totalmente fictícios.
 
@@ -17,9 +17,9 @@ Protótipo acadêmico em Next.js para demonstrar acesso seguro a IA e dados rest
 - Fortify Security Gateway
 - Endpoint de IA com chave mantida no servidor
 - Auditoria em logs JSON
-- Simulador industrial no navegador
+- Simulador subsea no navegador, com leito marinho, dutos, riser, skid/manifold e partículas de água
 - WebXR `immersive-vr` sem dependência externa de engine 3D
-- Ativo industrial fictício P-101 protegido por autorização
+- Módulo submarino fictício P-101 protegido por autorização, com profundidade e telemetria simuladas
 - Painel de arquitetura
 - Página de documentação técnica completa
 - Layout corporativo para apresentação
@@ -69,8 +69,8 @@ SMART GLASSES / HEADSET VR (simulação)
                 │
        ┌────────┴─────────┐
        ▼                  ▼
- IA / LLM          DADOS P-101
- corporativo       simulados
+ IA / LLM          P-101 SUBSEA
+ corporativo       dados fictícios
 ```
 
 ## Variáveis de ambiente
@@ -178,7 +178,7 @@ Sessão autenticada
   ↓
 /vr
   ↓
-Consultar P-101
+Escanear P-101 no campo submarino
   ↓
 Fortify verifica documents.read
   ↓
@@ -189,14 +189,21 @@ Consulta à IA
 Fortify verifica ai.query
 ```
 
+
+## Experiência Subsea XR
+
+A rota `/vr` agora possui uma ambientação submarina pensada para apresentação: fundo oceânico, feixes de luz, bolhas/partículas, leito marinho, dutos, riser e um skid/manifold simplificado em torno do P-101. No modo imersivo, os elementos são renderizados diretamente em WebGL sem modelos externos pesados, mantendo o protótipo leve para headsets como o Meta Quest 2.
+
+Os dados exibidos — incluindo profundidade de `1.820 m`, pressão, temperatura, vazão e vibração — são **100% simulados** e existem apenas para demonstrar o controle de acesso do Fortify.
+
 ## Teste com VR / WebXR
 
 1. Faça deploy em HTTPS.
 2. Abra `https://SEU-DOMINIO/vr` no navegador do headset.
 3. Conclua Login → MFA → Device Trust.
 4. Clique em **ENTRAR NO MODO IMERSIVO**.
-5. O ambiente WebXR renderiza o equipamento P-101 e o HUD Fortify.
-6. Pressione o gatilho do controlador para carregar/alternar os dados autorizados do equipamento.
+5. O ambiente WebXR renderiza um campo submarino leve com leito marinho, dutos, riser, skid/manifold, partículas d'água, módulo P-101 e o HUD Fortify.
+6. Pressione o gatilho do controlador para carregar/alternar os dados autorizados do módulo submarino.
 
 Se o headset ou navegador não disponibilizar `navigator.xr`, a página informa que o modo imersivo não está disponível e continua funcionando como simulador desktop.
 
@@ -218,7 +225,7 @@ Mesmo com usuário e MFA corretos, o Fortify bloqueia a sessão na etapa Device 
 
 ### Cenário 3 — endpoint protegido
 
-Sem sessão autenticada, `/api/fortify/xr/equipment` retorna `401` e não libera os valores do P-101.
+Sem sessão autenticada, `/api/fortify/xr/equipment` retorna `401` e não libera os valores fictícios do P-101.
 
 ### Cenário 4 — acesso à IA mediado
 
@@ -265,3 +272,7 @@ lib/
 ├── config.ts
 └── crypto.ts
 ```
+
+## Correção V5 — orientação do painel XR
+
+A malha do painel WebXR agora usa coordenadas UV padrão (base `v=0`, topo `v=1`) e mantém uma única inversão do Canvas durante o upload da textura com `UNPACK_FLIP_Y_WEBGL`. Isso corrige o painel/HUD que podia aparecer de ponta-cabeça em sessão XR.

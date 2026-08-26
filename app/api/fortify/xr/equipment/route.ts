@@ -8,12 +8,14 @@ import { requestHasSameOrigin } from "@/lib/security";
 const EQUIPMENT = {
   "P-101": {
     id: "P-101",
-    name: "Bomba de Processo",
-    area: "Área industrial simulada",
+    name: "Módulo Submarino de Bombeamento",
+    area: "Campo Subsea Simulado",
     status: "OPERACIONAL",
     pressureBar: 48.2,
     temperatureC: 72.4,
     vibrationMmS: 2.1,
+    flowRateM3h: 318.6,
+    depthM: 1820,
     classification: "DADO OPERACIONAL RESTRITO",
   },
 };
