@@ -276,3 +276,15 @@ lib/
 ## Correção V5 — orientação do painel XR
 
 A malha do painel WebXR agora usa coordenadas UV padrão (base `v=0`, topo `v=1`) e mantém uma única inversão do Canvas durante o upload da textura com `UNPACK_FLIP_Y_WEBGL`. Isso corrige o painel/HUD que podia aparecer de ponta-cabeça em sessão XR.
+
+## Subsea XR V7 — simulador imersivo 3D
+
+A rota `/vr` agora possui um renderer WebGL 3D próprio para o modo desktop, além do modo WebXR para headset. O cenário não é apenas uma imagem: o ambiente é renderizado em tempo real com iluminação, fog submarino, skid P-101, dutos, riser, estruturas distantes, ROV, partículas, scan pulse e HUD interativo.
+
+Controles no desktop:
+- Mouse: parallax/olhar em volta.
+- W/A/S/D ou setas: deslocamento limitado da câmera.
+- Clique no P-101 / painel de missão: solicita a telemetria pela API protegida.
+- Botão de tela cheia: demonstração em formato de visor.
+
+A liberação dos dados continua dependendo da sessão autenticada, MFA, Device Trust e RBAC do Fortify Security Gateway.

@@ -372,6 +372,13 @@ npm run dev`}</pre>
       </div>
 
       <SiteFooter />
-    </main>
+    
+      <section className="docSection" id="xr-v7">
+        <span className="sectionLabel">EXPERIÊNCIA IMERSIVA</span>
+        <h2>Fortify Subsea XR V7 — renderer 3D em tempo real</h2>
+        <p>O modo desktop da rota <code>/vr</code> usa WebGL para renderizar o campo submarino em tempo real. O cenário inclui dutos, skid P-101, riser, estruturas de fundo, ROV, partículas, iluminação, fog submarino, scan pulse e HUD de inspeção. Mouse e WASD movimentam a câmera, enquanto o clique no P-101 dispara a consulta protegida pela API do Fortify.</p>
+        <p>O cenário visual é uma simulação acadêmica. A autorização dos dados não é visual: ela continua sendo aplicada no servidor por identidade autenticada, MFA, Device Trust, sessão JWT/httpOnly e permissão RBAC.</p>
+      </section>
+</main>
   );
 }

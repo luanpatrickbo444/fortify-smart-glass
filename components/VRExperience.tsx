@@ -1,9 +1,10 @@
 "use client";
 
-import { FormEvent, type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { PetrobrasLogo } from "@/components/PetrobrasLogo";
+import { SubseaImmersiveScene } from "@/components/SubseaImmersiveScene";
 
 type Stage = "checking" | "login" | "mfa" | "device" | "ready";
 
@@ -343,8 +344,8 @@ export function VRExperience() {
       }
 
       const colorProgram = createProgram(gl,
-        `attribute vec3 a_position; uniform mat4 u_projection; uniform mat4 u_view; uniform mat4 u_model; void main(){ gl_Position=u_projection*u_view*u_model*vec4(a_position,1.0); }`,
-        `precision mediump float; uniform vec4 u_color; void main(){ gl_FragColor=u_color; }`
+        `attribute vec3 a_position; uniform mat4 u_projection; uniform mat4 u_view; uniform mat4 u_model; varying vec3 v_world; void main(){ vec4 world=u_model*vec4(a_position,1.0); v_world=world.xyz; gl_Position=u_projection*u_view*world; }`,
+        `precision mediump float; uniform vec4 u_color; varying vec3 v_world; void main(){ float d=clamp((-v_world.z-2.0)/12.0,0.0,1.0); vec3 fog=vec3(0.004,0.045,0.075); vec3 c=mix(u_color.rgb,fog,d*d*0.72); gl_FragColor=vec4(c,u_color.a); }`
       );
       const textureProgram = createProgram(gl,
         `attribute vec3 a_position; attribute vec2 a_uv; uniform mat4 u_projection; uniform mat4 u_view; uniform mat4 u_model; varying vec2 v_uv; void main(){ v_uv=a_uv; gl_Position=u_projection*u_view*u_model*vec4(a_position,1.0); }`,
@@ -486,6 +487,23 @@ export function VRExperience() {
             drawBox(projection, viewMatrix, modelMatrix(-1.18,1.58,-3.35,0.13,0.08,0.13), [0.96,0.76,0.10,1]);
             drawBox(projection, viewMatrix, modelMatrix(0.05,1.58,-3.35,0.13,0.08,0.13), [0.96,0.76,0.10,1]);
 
+            // Estruturas distantes para criar escala e profundidade no headset
+            for (let i = 0; i < 5; i++) {
+              const side = i % 2 === 0 ? -1 : 1;
+              const dx = side * (4.6 + (i % 3) * 1.35);
+              const dz = -7.5 - i * 1.65;
+              drawBox(projection, viewMatrix, modelMatrix(dx,0.78,dz,1.10,1.55,0.92), [0.035,0.12,0.15,1]);
+              drawBox(projection, viewMatrix, modelMatrix(dx,1.80,dz,1.55,0.10,1.18), [0.07,0.21,0.23,1]);
+              drawBox(projection, viewMatrix, modelMatrix(dx,2.28,dz,0.10,0.95,0.10), [0.09,0.27,0.28,1]);
+              drawBox(projection, viewMatrix, modelMatrix(dx,2.72,dz+0.34,0.07,0.07,0.05), [0.20,0.78,0.94,1]);
+            }
+
+            // ROV de inspeção em movimento lento
+            const rovY = 1.75 + Math.sin(t * 0.55) * 0.12;
+            const rovX = -3.7 + Math.sin(t * 0.22) * 0.24;
+            drawBox(projection, viewMatrix, modelMatrix(rovX,rovY,-6.15,0.72,0.38,0.58,0,0.18,0), [0.70,0.52,0.06,1]);
+            drawBox(projection, viewMatrix, modelMatrix(rovX,rovY,-5.82,0.10,0.10,0.05), [0.24,0.88,1.0,1]);
+
             // Partículas/b bolhas em movimento na coluna d'água
             gl.enable(gl.BLEND);
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -525,7 +543,7 @@ export function VRExperience() {
   }
 
   return (
-    <main className="xrPage">
+    <main className="xrPage xrPageV7">
       <div className="brandStripe" aria-hidden="true" />
       <header className="xrTopbar">
         <Link href="/" className="xrBrand"><Logo /></Link>
@@ -535,9 +553,9 @@ export function VRExperience() {
 
       <section className="xrHero">
         <div>
-          <span className="xrEyebrow">FORTIFY SUBSEA XR • SMART GLASSES SIMULATOR</span>
-          <h1>Operação submarina simulada com <em>acesso seguro</em> à IA.</h1>
-          <p>O headset VR representa os Smart Glasses em uma missão offshore/subsea fictícia. O operador inspeciona um módulo submarino enquanto identidade, MFA, Device Trust, RBAC e o Fortify Security Gateway controlam cada acesso aos dados.</p>
+          <span className="xrEyebrow">FORTIFY SUBSEA XR • IMMERSIVE OPERATIONS SIMULATOR</span>
+          <h1>Uma operação subsea que parece <em>missão real</em> — com acesso seguro à IA.</h1>
+          <p>O operador entra em um cenário submarino 3D, navega pelo campo com mouse/WASD, trava o alvo P-101 e só libera telemetria depois que identidade, MFA, Device Trust e RBAC passam pelo Fortify Security Gateway.</p>
         </div>
         <div className={`xrSupportBadge ${xrSupported ? "ok" : ""}`}>
           <span className="liveDot" />
@@ -545,24 +563,18 @@ export function VRExperience() {
         </div>
       </section>
 
-      <section className="xrWorkspace">
-        <div className="xrSceneCard">
+      <section className={`xrWorkspace xrWorkspaceV7 ${stage === "ready" ? "isReady" : ""}`}>
+        <div className="xrSceneCard xrSceneCardV7">
           <div className="xrSceneHead"><span>CAMPO SUBMARINO SIMULADO</span><b>SUBSEA • PROFUNDIDADE 1.820 m</b></div>
-          <div className="xrScene">
-            <div className="subseaLightRay rayOne" /><div className="subseaLightRay rayTwo" />
-            <div className="subseaBubbles" aria-hidden="true">{Array.from({length: 18}).map((_,i)=><span key={i} style={{ left: `${6 + i * 5.15}%`, bottom: `${-8 - (i % 4) * 4}%`, width: `${3 + (i % 5)}px`, height: `${3 + (i % 5)}px`, animationDuration: `${7 + (i % 6) * 1.1}s`, animationDelay: `${i * -0.55}s` } as CSSProperties} />)}</div>
-            <div className="subseaRock rockOne" /><div className="subseaRock rockTwo" /><div className="subseaRock rockThree" />
-            <div className="xrGridFloor" />
-            <div className="subseaPipeline pipeLeft" /><div className="subseaPipeline pipeRight" />
-            <div className="subseaRiser"><i /><b /></div>
-            <div className="subseaFrame"><i /><i /><i /><i /></div>
-            <button className="xrPump" onClick={loadEquipment} disabled={stage !== "ready" || busy} aria-label="Consultar módulo submarino P-101">
-              <span className="pumpPipe left" /><span className="pumpPipe right" />
-              <span className="pumpBody"><i /></span><span className="pumpBase" />
-              <strong>P-101</strong><small>MÓDULO SUBSEA • BOMBA</small>
-              <span className="scanRing" />
-            </button>
-            <div className="xrSceneLegend"><span className="liveDot" /> APONTE PARA O MÓDULO SUBSEA E SOLICITE DADOS</div>
+          <div className="xrScene xrSceneV7">
+            <SubseaImmersiveScene
+              authorized={stage === "ready"}
+              equipment={equipment}
+              busy={busy}
+              onScan={loadEquipment}
+              user={session?.user}
+              deviceId={session?.deviceId ?? deviceId}
+            />
           </div>
 
           <div className="xrControls">
@@ -574,7 +586,7 @@ export function VRExperience() {
           {!xrSupported && <p className="xrHint">WebXR imersivo exige HTTPS e navegador/headset compatível. O simulador desktop continua totalmente funcional.</p>}
         </div>
 
-        <aside className="xrSecurityPanel">
+        <aside className="xrSecurityPanel xrSecurityPanelV7">
           <div className="xrPanelHead"><span>FORTIFY SECURITY GATEWAY</span><b>{stage === "ready" ? "AUTHORIZED" : "LOCKED"}</b></div>
 
           {stage === "checking" && <div className="xrChecking">Verificando sessão segura…</div>}
