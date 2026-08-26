@@ -41,7 +41,8 @@ export default function MfaPage() {
       const res = await fetch("/api/fortify/auth/mfa", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
+        credentials: "include",
+        cache: "no-store",
         body: JSON.stringify({ code, method }),
       });
       const data = await res.json();

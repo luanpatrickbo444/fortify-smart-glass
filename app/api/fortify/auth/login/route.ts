@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   }
 
   const preAuthToken = await signToken({ sub: DEMO_USER, stage: "password", deviceId }, 180);
-  const response = NextResponse.json({ next: "mfa", mfaMethods: methods });
+  const response = NextResponse.json({ next: "mfa", mfaMethods: methods }, { headers: { "Cache-Control": "no-store, private" } });
   response.cookies.set(COOKIE_PREAUTH, preAuthToken, authCookieOptions(180));
   audit("password_verified", { user: DEMO_USER, deviceId, mfaMethods: methods });
   return response;

@@ -298,3 +298,9 @@ A liberação dos dados continua dependendo da sessão autenticada, MFA, Device 
 - O simulador desktop possui botão explícito **TELA CHEIA / SAIR** e, em fullscreen, um botão fixo **SAIR DA TELA CHEIA**.
 - Uma sessão WebXR ativa troca o botão principal para **SAIR DO MODO IMERSIVO**. Em controles WebXR compatíveis, o evento `squeeze`/grip também encerra a sessão.
 - O fullscreen usa `100dvh/100dvw` e safe-area para impedir que HUD e controles fiquem cortados pela interface do navegador.
+
+## Fluxo de sessão V10
+
+Após `POST /api/fortify/device/validate`, o navegador confirma imediatamente o cookie `fortify_session` chamando `/api/fortify/auth/session`. Somente depois dessa confirmação ocorre uma navegação completa para `/vr`.
+
+A rota `/vr` valida a sessão diretamente no runtime Node da aplicação (`force-dynamic`) e não depende mais de `proxy.ts`/middleware para validar um cookie recém-emitido. Isso evita redirecionamentos incorretos ao login causados por cache/prefetch de navegação ou diferenças de runtime.

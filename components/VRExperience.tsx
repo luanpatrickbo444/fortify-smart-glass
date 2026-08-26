@@ -203,7 +203,7 @@ export function VRExperience() {
 
   const checkSession = useCallback(async () => {
     try {
-      const res = await fetch("/api/fortify/auth/session", { cache: "no-store" });
+      const res = await fetch("/api/fortify/auth/session", { cache: "no-store", credentials: "include" });
       if (!res.ok) throw new Error();
       const data = await res.json();
       setSession(data);
@@ -211,6 +211,7 @@ export function VRExperience() {
       setStage("ready");
     } catch {
       setStage("login");
+      window.location.replace("/glass/login?reason=session-expired&next=/vr");
     }
   }, []);
 
@@ -232,7 +233,7 @@ export function VRExperience() {
     try {
       localStorage.setItem("fortify-device-id", deviceId);
       const res = await fetch("/api/fortify/auth/login", {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", cache: "no-store",
         body: JSON.stringify({ user, password, deviceId })
       });
       const data = await res.json();
@@ -247,7 +248,7 @@ export function VRExperience() {
     e.preventDefault(); setBusy(true); setNotice("");
     try {
       const res = await fetch("/api/fortify/auth/mfa", {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", cache: "no-store",
         body: JSON.stringify({ code: mfaCode, preAuthToken })
       });
       const data = await res.json();
@@ -262,7 +263,7 @@ export function VRExperience() {
     setBusy(true); setNotice("");
     try {
       const res = await fetch("/api/fortify/device/validate", {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", cache: "no-store",
         body: JSON.stringify({ deviceId, mfaToken })
       });
       const data = await res.json();
@@ -276,7 +277,7 @@ export function VRExperience() {
     setBusy(true); setNotice("");
     try {
       const res = await fetch("/api/fortify/xr/equipment", {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", cache: "no-store",
         body: JSON.stringify({ equipmentId: "P-101" })
       });
       const data = await res.json();
@@ -299,7 +300,7 @@ export function VRExperience() {
     setBusy(true); setNotice(""); setAiAnswer("");
     try {
       const res = await fetch("/api/fortify/ai/query", {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", cache: "no-store",
         body: JSON.stringify({ message })
       });
       const data = await res.json();
@@ -319,9 +320,9 @@ export function VRExperience() {
 
   async function logout() {
     await stopImmersiveVR();
-    await fetch("/api/fortify/auth/logout", { method: "POST", credentials: "same-origin" });
+    await fetch("/api/fortify/auth/logout", { method: "POST", credentials: "include" });
     setSession(null); setEquipment(null); setAiAnswer(""); setPassword(""); setMfaCode(""); setStage("login");
-    window.location.assign("/glass/login");
+    window.location.replace("/glass/login");
   }
 
   async function startImmersiveVR() {

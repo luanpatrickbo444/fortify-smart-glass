@@ -19,3 +19,5 @@ export function allowedDevices() {
     .map((v) => v.trim())
     .filter(Boolean);
 }
+
+export const SESSION_TTL_SECONDS = Math.max(900, Number(process.env.FORTIFY_SESSION_TTL_SECONDS ?? "14400") || 14400);

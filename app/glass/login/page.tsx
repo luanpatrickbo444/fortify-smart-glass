@@ -18,8 +18,8 @@ export default function LoginPage() {
     if (saved) setDeviceId(saved);
     else localStorage.setItem("fortify-device-id", "FORTIFY-GLASS-001");
 
-    fetch("/api/fortify/auth/session", { cache: "no-store", credentials: "same-origin" })
-      .then((res) => { if (alive && res.ok) router.replace("/vr"); })
+    fetch("/api/fortify/auth/session", { cache: "no-store", credentials: "include" })
+      .then((res) => { if (alive && res.ok) window.location.replace(`/vr?resume=${Date.now()}`); })
       .catch(() => {});
 
     return () => { alive = false; };
@@ -33,7 +33,8 @@ export default function LoginPage() {
       const res = await fetch("/api/fortify/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
+        credentials: "include",
+        cache: "no-store",
         body: JSON.stringify({ user, password, deviceId }),
       });
       const data = await res.json();

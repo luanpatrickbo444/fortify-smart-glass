@@ -8,7 +8,8 @@ export function authCookieOptions(maxAge: number) {
   return {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict" as const,
+    sameSite: "lax" as const,
+    priority: "high" as const,
     path: "/",
     maxAge,
   };

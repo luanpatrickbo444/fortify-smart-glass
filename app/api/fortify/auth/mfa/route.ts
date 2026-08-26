@@ -41,7 +41,7 @@ export async function POST(request: Request) {
   }
 
   const mfaToken = await signToken({ sub: pre.sub, stage: "mfa", deviceId: pre.deviceId }, 180);
-  const response = NextResponse.json({ next: "device", method: selected });
+  const response = NextResponse.json({ next: "device", method: selected }, { headers: { "Cache-Control": "no-store, private" } });
   response.cookies.set(COOKIE_MFA, mfaToken, authCookieOptions(180));
   response.cookies.set(COOKIE_PREAUTH, "", { ...authCookieOptions(0), expires: new Date(0) });
   audit("mfa_verified", { user: pre.sub, deviceId: pre.deviceId, method: selected });

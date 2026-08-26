@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   const token = jar.get(COOKIE_SESSION)?.value;
   const session = await verifyToken(token);
   if (session) audit("session_closed", { user: session.sub, deviceId: session.deviceId });
-  const response = NextResponse.json({ ok: true });
+  const response = NextResponse.json({ ok: true }, { headers: { "Cache-Control": "no-store, private" } });
   clearAuthCookies(response);
   return response;
 }
