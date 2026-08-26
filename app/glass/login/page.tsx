@@ -13,10 +13,17 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    let alive = true;
     const saved = localStorage.getItem("fortify-device-id");
     if (saved) setDeviceId(saved);
     else localStorage.setItem("fortify-device-id", "FORTIFY-GLASS-001");
-  }, []);
+
+    fetch("/api/fortify/auth/session", { cache: "no-store", credentials: "same-origin" })
+      .then((res) => { if (alive && res.ok) router.replace("/vr"); })
+      .catch(() => {});
+
+    return () => { alive = false; };
+  }, [router]);
 
   async function submit(e: FormEvent) {
     e.preventDefault();

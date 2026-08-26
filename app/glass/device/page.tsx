@@ -28,7 +28,7 @@ export default function DevicePage() {
       if (!res.ok) throw new Error(data.error ?? "Dispositivo não autorizado");
       setStatus("ok");
       sessionStorage.removeItem("fortify-mfa-methods");
-      setTimeout(() => router.push("/glass/assistant"), 650);
+      setTimeout(() => router.replace("/vr"), 420);
     } catch (err) {
       setStatus("error");
       setError(err instanceof Error ? err.message : "Falha inesperada");
@@ -43,7 +43,7 @@ export default function DevicePage() {
       description="O usuário pode estar correto e ainda assim o equipamento precisa ser confiável. O Fortify vincula a sessão a um dispositivo corporativo autorizado."
     >
       {error && <div className="error">{error}</div>}
-      {status === "ok" && <div className="success">Dispositivo confiável. Sessão corporativa emitida com sucesso.</div>}
+      {status === "ok" && <div className="success">Dispositivo confiável. Sessão corporativa emitida. Abrindo o Fortify Subsea XR…</div>}
       <div className="devicePanel">
         <div className="deviceCard deviceVisual" />
         <div className="deviceCard">

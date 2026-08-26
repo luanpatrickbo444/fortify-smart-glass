@@ -736,3 +736,81 @@ h1 { margin: 0; color: var(--petro-navy); font-size: clamp(35px,4.2vw,61px); lin
 .xrWorkspaceV7.isReady .xrSceneCardV7 { min-height:800px; }
 .xrWorkspaceV7.isReady .xrSceneV7,.xrWorkspaceV7.isReady .subseaImmersive { min-height:690px; }
 @media(max-width:1050px){.xrWorkspaceV7{grid-template-columns:1fr}.xrSceneCardV7{min-height:680px}.xrSecurityPanelV7{min-height:0}.xrPageV7{background:linear-gradient(180deg,#03131f 0,#061f2c 24%,#eef4f1 24.1%)}}
+
+
+/* =========================================================
+   FORTIFY SUBSEA XR V9 — AUTH FLOW + IMMERSIVE EXIT + VIEWPORT FIX
+   ========================================================= */
+.xrImmersiveExit {
+  position: fixed;
+  z-index: 99999;
+  top: max(18px, env(safe-area-inset-top));
+  right: max(18px, env(safe-area-inset-right));
+  border: 1px solid rgba(255,118,118,.55);
+  border-radius: 999px;
+  padding: 12px 17px;
+  background: rgba(36,7,10,.92);
+  color: #ffd9d9;
+  font: 900 10px/1 ui-monospace,Consolas,monospace;
+  letter-spacing: .08em;
+  cursor: pointer;
+  box-shadow: 0 12px 40px rgba(0,0,0,.36), 0 0 20px rgba(255,82,82,.10);
+  backdrop-filter: blur(12px);
+}
+.xrImmersiveExit:hover { background:#511117; border-color:#ff8f8f; transform:translateY(-1px); }
+.xrPrimaryExit { background:linear-gradient(135deg,#8d1d27,#4d0d13) !important; border-color:rgba(255,143,143,.45) !important; }
+
+.xrLockedState { padding:28px 24px; display:flex; flex-direction:column; gap:14px; }
+.xrLockedState h2 { margin:0; color:#123b43; font-size:28px; line-height:1.05; }
+.xrLockedState p { margin:0; color:#5d747a; line-height:1.7; font-size:13px; }
+.xrLockedButton { margin-top:8px; display:inline-flex; justify-content:center; align-items:center; min-height:48px; padding:0 18px; border-radius:12px; background:#0b6a44; color:white; font:900 10px/1 ui-monospace,Consolas,monospace; letter-spacing:.08em; }
+
+.subseaFullscreenExit {
+  display:none;
+  position:absolute;
+  z-index:999;
+  top:max(18px, env(safe-area-inset-top));
+  right:max(18px, env(safe-area-inset-right));
+  border:1px solid rgba(117,230,247,.42);
+  border-radius:999px;
+  background:rgba(0,15,24,.90);
+  color:#dffaff;
+  padding:11px 15px;
+  font:900 9px/1 ui-monospace,Consolas,monospace;
+  letter-spacing:.08em;
+  cursor:pointer;
+  box-shadow:0 10px 30px rgba(0,0,0,.28);
+  backdrop-filter:blur(10px);
+}
+.subseaFullscreenExit small { margin-left:7px; opacity:.55; font-size:8px; }
+.subseaImmersive:fullscreen .subseaFullscreenExit { display:block; }
+
+/* Use dynamic viewport units so browser chrome / mobile bars do not crop the visor. */
+.subseaImmersive:fullscreen {
+  width:100dvw !important;
+  height:100dvh !important;
+  min-width:100dvw !important;
+  min-height:100dvh !important;
+  max-width:none !important;
+  max-height:none !important;
+  overflow:hidden !important;
+}
+.subseaImmersive:fullscreen .subseaWebgl { width:100dvw !important; height:100dvh !important; }
+.subseaImmersive:fullscreen .subseaMission { bottom:max(28px, calc(env(safe-area-inset-bottom) + 16px)); }
+.subseaImmersive:fullscreen .subseaRadar { bottom:max(30px, calc(env(safe-area-inset-bottom) + 18px)); }
+.subseaImmersive:fullscreen .subseaTelemetry { bottom:max(34px, calc(env(safe-area-inset-bottom) + 18px)); }
+.subseaImmersive:fullscreen .subseaActions { left:max(160px, calc(env(safe-area-inset-left) + 150px)); bottom:max(38px, calc(env(safe-area-inset-bottom) + 18px)); }
+.subseaImmersive:fullscreen .subseaTopHud { top:max(30px, calc(env(safe-area-inset-top) + 16px)); }
+
+/* The old responsive rule hid the only fullscreen control under 900px. Keep it visible. */
+@media(max-width:900px){
+  .subseaActions{display:flex !important;left:auto !important;right:20px;bottom:20px;padding:6px;z-index:40}
+  .subseaActions span{display:none}
+  .subseaActions button{width:auto;min-width:78px;padding:0 10px;font-size:8px;font-weight:900;letter-spacing:.06em}
+  .subseaImmersive:fullscreen .subseaActions{right:max(18px, env(safe-area-inset-right));bottom:max(18px, env(safe-area-inset-bottom))}
+}
+@media(max-width:620px){
+  .subseaMission{bottom:76px !important}
+  .subseaImmersive:fullscreen .subseaMission{bottom:max(78px, calc(env(safe-area-inset-bottom) + 62px)) !important}
+  .subseaFullscreenExit{top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));padding:9px 12px;font-size:8px}
+}

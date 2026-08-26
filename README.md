@@ -288,3 +288,13 @@ Controles no desktop:
 - Botão de tela cheia: demonstração em formato de visor.
 
 A liberação dos dados continua dependendo da sessão autenticada, MFA, Device Trust e RBAC do Fortify Security Gateway.
+
+
+## V9 — fluxo único de autenticação e saída do modo imersivo
+
+- Fluxo oficial: `/glass/login` → `/glass/mfa` → `/glass/device` → `/vr`.
+- `/glass/assistant` agora redireciona para `/vr`; não existe mais uma tela de chat paralela após liberar o dispositivo.
+- `/vr` é uma rota protegida pelo `proxy.ts` e só abre com sessão autenticada.
+- O simulador desktop possui botão explícito **TELA CHEIA / SAIR** e, em fullscreen, um botão fixo **SAIR DA TELA CHEIA**.
+- Uma sessão WebXR ativa troca o botão principal para **SAIR DO MODO IMERSIVO**. Em controles WebXR compatíveis, o evento `squeeze`/grip também encerra a sessão.
+- O fullscreen usa `100dvh/100dvw` e safe-area para impedir que HUD e controles fiquem cortados pela interface do navegador.

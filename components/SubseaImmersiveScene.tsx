@@ -585,8 +585,16 @@ export function SubseaImmersiveScene({ authorized, equipment, busy, onScan, user
         <div className="radarSweep"/><i/><i/><i/><span>P-101</span>
       </div>
 
+      {fullscreen && (
+        <button type="button" className="subseaFullscreenExit" onClick={toggleFullscreen}>
+          ✕ SAIR DA TELA CHEIA <small>ESC</small>
+        </button>
+      )}
+
       <div className="subseaActions glassPanel">
-        <button type="button" onClick={toggleFullscreen} title="Tela cheia">{fullscreen ? "↙" : "⛶"}</button>
+        <button type="button" onClick={toggleFullscreen} title={fullscreen ? "Sair da tela cheia" : "Entrar em tela cheia"}>
+          {fullscreen ? "SAIR" : "TELA CHEIA"}
+        </button>
         <span>WASD</span><span>MOUSE</span><span>CLICK SCAN</span>
       </div>
 

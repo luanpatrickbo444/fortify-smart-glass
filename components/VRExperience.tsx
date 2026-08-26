@@ -170,6 +170,9 @@ function createPanelCanvas(session: SessionInfo | null, equipment: EquipmentData
   ctx.fillStyle = "rgba(255,255,255,.65)";
   ctx.font = "500 18px Arial";
   ctx.fillText("Protótipo acadêmico SENAI • Integração demonstrativa • Não representa sistema Petrobras em produção", 70, 570);
+  ctx.fillStyle = "#7ce3ae";
+  ctx.font = "700 16px Arial";
+  ctx.fillText("SAIR DO VR: pressione o grip/squeeze do controle ou use o botão SAIR DO MODO IMERSIVO no navegador.", 70, 602);
   return canvas;
 }
 
@@ -213,7 +216,7 @@ export function VRExperience() {
 
   useEffect(() => {
     checkSession();
-    const saved = localStorage.getItem("fortify_device_id");
+    const saved = localStorage.getItem("fortify-device-id");
     if (saved) setDeviceId(saved);
 
     const xr = (navigator as any).xr;
@@ -227,7 +230,7 @@ export function VRExperience() {
   async function submitLogin(e: FormEvent) {
     e.preventDefault(); setBusy(true); setNotice("");
     try {
-      localStorage.setItem("fortify_device_id", deviceId);
+      localStorage.setItem("fortify-device-id", deviceId);
       const res = await fetch("/api/fortify/auth/login", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user, password, deviceId })
@@ -306,10 +309,19 @@ export function VRExperience() {
     finally { setBusy(false); }
   }
 
+  async function stopImmersiveVR() {
+    const activeSession = xrRuntimeRef.current?.session;
+    if (activeSession) {
+      await activeSession.end().catch(() => {});
+    }
+    setXrActive(false);
+  }
+
   async function logout() {
-    await fetch("/api/fortify/auth/logout", { method: "POST" });
-    if (xrRuntimeRef.current?.session) await xrRuntimeRef.current.session.end().catch(() => {});
+    await stopImmersiveVR();
+    await fetch("/api/fortify/auth/logout", { method: "POST", credentials: "same-origin" });
     setSession(null); setEquipment(null); setAiAnswer(""); setPassword(""); setMfaCode(""); setStage("login");
+    window.location.assign("/glass/login");
   }
 
   async function startImmersiveVR() {
@@ -426,6 +438,12 @@ export function VRExperience() {
         if (!equipmentRef.current) await loadEquipment();
         else detailsVisibleRef.current = !detailsVisibleRef.current;
         updatePanel();
+      });
+
+      // WebXR controller escape: on Quest-style controllers the grip/squeeze
+      // is an explicit in-headset way to leave the immersive session.
+      xrSession.addEventListener("squeeze", () => {
+        xrSession.end().catch(() => {});
       });
 
       function drawBox(projection: ArrayLike<number>, view: ArrayLike<number>, model: Mat4, color: [number,number,number,number]) {
@@ -560,6 +578,11 @@ export function VRExperience() {
   return (
     <main className="xrPage xrPageV7">
       <div className="brandStripe" aria-hidden="true" />
+      {xrActive && (
+        <button type="button" className="xrImmersiveExit" onClick={stopImmersiveVR}>
+          ✕ SAIR DO MODO IMERSIVO
+        </button>
+      )}
       <header className="xrTopbar">
         <Link href="/" className="xrBrand"><Logo /></Link>
         <div className="xrPartner"><span>PROTÓTIPO DE INOVAÇÃO</span><PetrobrasLogo compact /></div>
@@ -593,8 +616,8 @@ export function VRExperience() {
           </div>
 
           <div className="xrControls">
-            <button onClick={startImmersiveVR} className="xrPrimary" disabled={stage !== "ready" || xrActive}>
-              {xrActive ? "SESSÃO VR ATIVA" : "ENTRAR NO MODO IMERSIVO"}
+            <button onClick={xrActive ? stopImmersiveVR : startImmersiveVR} className={xrActive ? "xrPrimary xrPrimaryExit" : "xrPrimary"} disabled={stage !== "ready"}>
+              {xrActive ? "SAIR DO MODO IMERSIVO" : "ENTRAR NO MODO IMERSIVO"}
             </button>
             <button onClick={loadEquipment} className="xrSecondary" disabled={stage !== "ready" || busy}>ESCANEAR P-101</button>
           </div>
@@ -606,31 +629,12 @@ export function VRExperience() {
 
           {stage === "checking" && <div className="xrChecking">Verificando sessão segura…</div>}
 
-          {stage === "login" && (
-            <form onSubmit={submitLogin} className="xrForm">
-              <span className="xrStep">ETAPA 01 / IDENTIDADE</span>
-              <h2>Autenticação corporativa</h2>
-              <label>Identidade<input value={user} onChange={e=>setUser(e.target.value)} autoComplete="username" /></label>
-              <label>Senha / PIN<input type="password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password" /></label>
-              <label>Device ID<input value={deviceId} onChange={e=>setDeviceId(e.target.value.toUpperCase())} /></label>
-              <button disabled={busy}>{busy ? "VALIDANDO…" : "VALIDAR IDENTIDADE"}</button>
-            </form>
-          )}
-
-          {stage === "mfa" && (
-            <form onSubmit={submitMfa} className="xrForm">
-              <span className="xrStep">ETAPA 02 / MFA</span><h2>Segundo fator</h2>
-              <p>A identidade primária foi validada. Informe o segundo fator para continuar.</p>
-              <label>Código MFA<input inputMode="numeric" value={mfaCode} onChange={e=>setMfaCode(e.target.value.replace(/\D/g, "").slice(0, 8))} /></label>
-              <button disabled={busy}>{busy ? "VERIFICANDO…" : "VALIDAR MFA"}</button>
-            </form>
-          )}
-
-          {stage === "device" && (
-            <div className="xrForm">
-              <span className="xrStep">ETAPA 03 / DEVICE TRUST</span><h2>Confiança do dispositivo</h2>
-              <p>O Fortify verificará se <b>{deviceId}</b> é o mesmo dispositivo usado no início do fluxo e se está autorizado.</p>
-              <button onClick={validateDevice} disabled={busy}>{busy ? "VALIDANDO…" : "AUTORIZAR DISPOSITIVO"}</button>
+          {stage !== "checking" && stage !== "ready" && (
+            <div className="xrLockedState">
+              <span className="xrStep">ACESSO PROTEGIDO</span>
+              <h2>Autenticação necessária</h2>
+              <p>O simulador XR não executa um segundo fluxo de login. Identidade, MFA e Device Trust são validados uma única vez nas telas de autenticação do Fortify.</p>
+              <Link href="/glass/login" className="xrLockedButton">INICIAR AUTENTICAÇÃO SEGURA</Link>
             </div>
           )}
 

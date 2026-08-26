@@ -13,4 +13,4 @@ export async function proxy(request: NextRequest) {
   return NextResponse.next();
 }
 
-export const config = { matcher: ["/glass/assistant/:path*"] };
+export const config = { matcher: ["/vr/:path*", "/glass/assistant/:path*"] };
